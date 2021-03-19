@@ -2,7 +2,9 @@
 // import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 //import java.util.*;
 
@@ -17,10 +19,26 @@ class StrFSeconds {
         //
         // Maybe proceed to BigDecimal for more precision:
         //
-        // >>> BigDecimal test1 = new BigDecimal(4000/.000001);
-        // >>> System.out.println( test1.toPlainString());
+        // >>> BigDecimal bD = new BigDecimal(4000/.000001);
+        // >>> System.out.println(bD.toPlainString());
         // 4000000000
         //
+        // BigDecimal Floor
+        //BigDecimal bd1 = new BigDecimal(7200);
+        //BigDecimal bd2 = new BigDecimal(3600);
+        //BigDecimal bd2 = new BigDecimal(3600.0000000000000001);
+        //System.out.println( bd1.divide(bd2, 30, RoundingMode.CEILING));
+        //System.out.println( bd1.divideToIntegralValue(bd2));
+
+        // unitSize = unitSize.add( secondsDivMod.divide(unit.getValue(), 2, RoundingMode.FLOOR));
+
+        // Why is Java 'String' type written in capital letter while
+        // 'int'"' is not?
+        // https://stackoverflow.com/a/4006311
+        //
+
+        long startTime = System.currentTimeMillis();
+
 
         double seconds;
         String formatStringResult;
@@ -29,22 +47,26 @@ class StrFSeconds {
         //seconds=1;
         //seconds=4000;
         seconds=4000.1234567890;
+        //seconds=4000;
 
-        formatStringResult = StrFSeconds(seconds, "%h:%m:%s");
+        formatStringResult = StrFSeconds(seconds, "%h:%m:%s", 10);
         System.out.println(formatStringResult);
 
         formatStringResult = StrFSeconds(seconds, "%f");
         System.out.println(formatStringResult);
+
+
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        System.out.println("[Elapsed in " + elapsedTime + "ms]");
     }
 
 
-    public static String StrFSeconds( double seconds, String formatString, int nDecimal) {
-        String smallestTimeUnitInFormatString = null;
-        //double unitSize;
-        double unitSize;
-        // BigDecimal unitSize;
+    public static String StrFSeconds(double seconds, String formatString, int nDecimal) {
 
-        String unitSizeString;
+        String smallestUnitInFormatString = null;
+        BigDecimal unitSize = new BigDecimal(0);
+        String unitSizePlainString;
+        BigDecimal secondsDivMod = new BigDecimal(seconds);
 
         //System.out.println(seconds);
 
@@ -53,51 +75,78 @@ class StrFSeconds {
         // iterate in the order in which the entries were put into the map
         // https://stackoverflow.com/a/17910409
         // https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/LinkedHashMap.html
-        LinkedHashMap<String,Float> units = new LinkedHashMap<>();
-        units.put("w", (float)604800);
-        units.put("d", (float)86400);
-        units.put("h", (float)3600);
-        units.put("m", (float)60);
-        units.put("s", (float)1);
-        units.put("l", (float).001);
-        units.put("f", (float).000001);
 
-        for (Map.Entry<String,Float> unit : units.entrySet())
-            //System.out.println(unit.getKey() + " = " + unit.getValue());
-            //System.out.println(formatString.indexOf( "%"+unit.getKey()));
+        LinkedHashMap<String,BigDecimal> units = new LinkedHashMap<>();
+        units.put("w", new BigDecimal(604800));
+        units.put("d", new BigDecimal(86400));
+        units.put("h", new BigDecimal(3600));
+        units.put("m", new BigDecimal(60));
+        units.put("s", new BigDecimal(1));
+        units.put("l", new BigDecimal(.001));
+        units.put("f", new BigDecimal(.000001));
+
+        // Determine the smallest time unit in the formatString, if no
+        // smallest time unit found return formatString.
+        for (Map.Entry<String,BigDecimal> unit : units.entrySet())
             if (formatString.indexOf("%"+unit.getKey()) != -1)
-                smallestTimeUnitInFormatString = unit.getKey();
+                smallestUnitInFormatString = unit.getKey();
 
-        //System.out.println("smallestTimeUnitInFormatString = %" + smallestTimeUnitInFormatString);
-        if (smallestTimeUnitInFormatString == null)
+        if (smallestUnitInFormatString == null)
             return formatString;
 
-        for (Map.Entry<String,Float> unit : units.entrySet()) {
+        // For every time unit in units...
+        for (Map.Entry<String,BigDecimal> unit : units.entrySet()) {
+            // Check if this time unit is in formatString, if not
+            // continue.
             if (formatString.indexOf("%"+unit.getKey()) == -1)
                 continue;
 
-            // divmod
+            // Since BigDecimal implementation, (re)set value of
+            // unitSize.
+            // https://coderanch.com/t/534944/java/setting-BigDecimal-variable
+            unitSize = BigDecimal.ZERO;
+
+            // divmod > div
+            //
+            // Get the quotient of this units seconds and the
+            // available seconds.
+            //
             // unit_size, seconds = divmod(seconds, unit['secs'])
+            //
             // # Cast to int Math.floor to prevent 'error: incompatible types:
             // possible lossy conversion from double to double'
             // # Do not cast to int! Causes unexpected results on large
             // numbers. (error: integer number too large)
             //unitSize = (int)Math.floor(seconds / unit.getValue());
-            unitSize = Math.floor(seconds / unit.getValue());
+            //unitSize = Math.floor(seconds / unit.getValue());
+            //unitSize = unitSize.add(new BigDecimal(Math.floor(seconds / unit.getValue())));
+
+            // Divide with precision set to 0
+            unitSize = unitSize.add(secondsDivMod.divide(unit.getValue(), 0, RoundingMode.FLOOR));
+
+
+            // divmod > mod
+            //
+            // Assign modulus (remainder) to seconds
+            //
+            //seconds = seconds % unit.getValue();
+            secondsDivMod = secondsDivMod.remainder(unit.getValue());
+
+            //System.out.println("Time unit: %" + unit.getKey());
             //System.out.println(seconds);
             //System.out.println(unit.getValue());
             //System.out.println(seconds / unit.getValue());
+            //System.out.println(new BigDecimal(Math.floor(seconds / unit.getValue())));
             //System.out.println(unitSize);
+            //System.out.println();
 
-            // unitSize = new BigDecimal(Math.floor(seconds / unit.getValue()));
-            seconds = seconds % unit.getValue();
-            // System.out.println( "divmod seconds % unit seconds " + seconds + " " + unit.getValue());
-
-            if (unit.getKey() == smallestTimeUnitInFormatString) {
+            // Smallest unit, add the remaing seconds as fractions of
+            // unit size.
+            if (unit.getKey() == smallestUnitInFormatString)
                 // unit_size += 1 / unit['secs'] * seconds
-                unitSize += 1 / unit.getValue() * seconds;
-                // unitSize = unitSize.add(new BigDecimal(seconds));
-            }
+                // unitSize += 1 / unit.getValue() * seconds;
+                // unitSize = unitSize.add(new BigDecimal(1 / unit.getValue() * seconds));
+                unitSize = unitSize.add(secondsDivMod.divide(unit.getValue(), nDecimal, RoundingMode.FLOOR));
 
 
             // calculations are done, proceed with formatting
@@ -107,9 +156,12 @@ class StrFSeconds {
             // BigDecimal d = new BigDecimal(unitSize);
             // unitSizeString = d.toPlainString();
             // unitSizeString = String.valueOf(unitSize);
-            unitSizeString = new BigDecimal(unitSize).toPlainString();
+            //unitSizePlainString = new BigDecimal(unitSize).toPlainString();
+            unitSizePlainString = unitSize.toPlainString();
 
-            formatString = formatString.replace("%"+unit.getKey(), unitSizeString);
+            //System.out.println(unitSize);
+
+            formatString = formatString.replace("%"+unit.getKey(), unitSizePlainString);
         }
 
 
@@ -127,7 +179,4 @@ class StrFSeconds {
         return StrFSeconds( seconds, "%h2:%m2:%s", 3);
     }
 
-
 }
-
-
