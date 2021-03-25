@@ -9,7 +9,7 @@ import java.math.RoundingMode;
 //import java.util.*;
 
 
-class StrFSeconds {
+public class StringFormatSecondsHighPrecision {
     public static void main(String[] args) {
         // See div mod calculations, using a double or float loses
         // precision? 4000 seconds returns 4000000010.099 milliseconds.
@@ -28,7 +28,6 @@ class StrFSeconds {
         //BigDecimal bd2 = new BigDecimal(3600);
         //BigDecimal bd2 = new BigDecimal(3600.0000000000000001);
         //System.out.println( bd1.divide(bd2, 30, RoundingMode.CEILING));
-        //System.out.println( bd1.divideToIntegralValue(bd2));
 
         // unitSize = unitSize.add( secondsDivMod.divide(unit.getValue(), 2, RoundingMode.FLOOR));
 
@@ -49,19 +48,18 @@ class StrFSeconds {
         seconds=4000.1234567890;
         //seconds=4000;
 
-        formatStringResult = StrFSeconds(seconds, "%h:%m:%s", 10);
+        formatStringResult = format(seconds, "%h:%m:%s", 10);
         System.out.println(formatStringResult);
 
-        formatStringResult = StrFSeconds(seconds, "%f");
+        formatStringResult = format(seconds, "%f");
         System.out.println(formatStringResult);
-
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         System.out.println("[Elapsed in " + elapsedTime + "ms]");
     }
 
 
-    public static String StrFSeconds(double seconds, String formatString, int nDecimal) {
+    public static String format(double seconds, String formatString, int nDecimal) {
 
         String smallestUnitInFormatString = null;
         BigDecimal unitSize = new BigDecimal(0);
@@ -125,6 +123,7 @@ class StrFSeconds {
             unitSize = unitSize.add(secondsDivMod.divide(unit.getValue(), 0, RoundingMode.FLOOR));
 
 
+
             // divmod > mod
             //
             // Assign modulus (remainder) to seconds
@@ -171,12 +170,12 @@ class StrFSeconds {
     // Default parameter values?
     // Use method overloading.
     // https://stackoverflow.com/a/1038401
-    public static String StrFSeconds( double seconds, String formatString) {
-        return StrFSeconds( seconds, formatString, 3);
+    public static String format( double seconds, String formatString) {
+        return format(seconds, formatString, 3);
     }
 
-    public static String StrFSeconds( double seconds) {
-        return StrFSeconds( seconds, "%h2:%m2:%s", 3);
+    public static String format( double seconds) {
+        return format(seconds, "%h2:%m2:%s", 3);
     }
 
 }
