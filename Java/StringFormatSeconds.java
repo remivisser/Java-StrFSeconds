@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 
 
 class StringFormatSeconds {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // See div mod calculations, using a double or float loses
         // precision? 4000 seconds returns 4000000010.099 milliseconds.
         //
@@ -35,8 +35,8 @@ class StringFormatSeconds {
         seconds=4000.1234567890;
         seconds=4000.9999;
 
-        // formatStringResult = format(0, "%h:%m:%s", 2);
-        // System.out.println(formatStringResult);
+        formatStringResult = format(90, "%h:%m:%s", -2);
+        System.out.println(formatStringResult);
 
         formatStringResult = format(seconds, "%h2:%m2:%s2", 3);
         System.out.println(formatStringResult);
@@ -50,7 +50,7 @@ class StringFormatSeconds {
     }
 
 
-    public static String format(double seconds, String formatString, int nDecimal) throws Exception {
+    public static String format(double seconds, String formatString, int nDecimal) {
         String smallestTimeUnitInFormatString = null;
         //double unitSize;
         double unitSize;
@@ -59,11 +59,12 @@ class StringFormatSeconds {
         int i;
 
         // Input validation
+        // https://docs.oracle.com/javase/8/docs/api/java/lang/IllegalArgumentException.html
         if (seconds < 0)
-            throw new IncorrectSeconds("Seconds must be greater than or equal to 0");
+            throw new IllegalArgumentException("Seconds must be greater than or equal to 0");
 
         if (nDecimal < 0)
-            throw new IncorrectNDecimal("Decimal must be greater than or equal to 0");
+            throw new IllegalArgumentException("Decimal must be greater than or equal to 0");
 
 
         //System.out.println(seconds);
@@ -140,14 +141,14 @@ class StringFormatSeconds {
                 // https://stackoverflow.com/a/47809639
                 //unitSizeString = String.valueOf((int)unitSize);
                 unitSizeString = new BigDecimal(unitSize).toPlainString();
-                // Leading zeroes, no decimals, nor decimal sign set
+                // Leading zeroes, no decimals, nor decimal sign; set
                 // amount of spaces to unitLeftPad.
                 if (unitLeftPad != "")
                     unitSizeString = String.format("%" + (int)Integer.parseInt(unitLeftPad) +"s", unitSizeString).replace(" ", "0");
 
             } else {
 
-                // Smallest entries
+                // Smallest entry
                 // BigDecimal scale
                 // https://stackoverflow.com/a/13136669
                 // BigDecimal Oneliner
@@ -175,26 +176,12 @@ class StringFormatSeconds {
     // Default parameter values?
     // Use method overloading.
     // https://stackoverflow.com/a/1038401
-    public static String format( double seconds, String formatString) throws Exception {
+    public static String format( double seconds, String formatString) {
         return format(seconds, formatString, 3);
     }
 
-    public static String format( double seconds) throws Exception {
+    public static String format( double seconds) {
         return format(seconds, "%h2:%m2:%s", 3);
     }
 
-}
-
-
-// Exceptions
-class IncorrectSeconds extends Exception {
-    public IncorrectSeconds(String errorMessage) {
-        super(errorMessage);
-    }
-}
-
-class IncorrectNDecimal extends Exception {
-    public IncorrectNDecimal(String errorMessage) {
-        super(errorMessage);
-    }
 }
