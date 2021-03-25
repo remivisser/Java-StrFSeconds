@@ -1,5 +1,5 @@
-class StringFormatSecondsTest {
-    public static void main(String[] args) throws Exception {
+class TestStringFormatSecondsHighPrecision {
+    public static void main(String[] args) {
 
         long startTime = System.currentTimeMillis();
 
@@ -14,13 +14,10 @@ class StringFormatSecondsTest {
         //seconds=4000;
         seconds=4000.1234567890;
 
-        formatStringResult = StringFormatSeconds.format(-1, "%h:%m:%s", 10);
+        formatStringResult = StringFormatSecondsHighPrecision.format(seconds, "%h:%m:%s", 10);
         System.out.println(formatStringResult);
 
-        formatStringResult = StringFormatSeconds.format(seconds, "%h:%m:%s", 10);
-        System.out.println(formatStringResult);
-
-        formatStringResult = StringFormatSeconds.format(seconds, "%f");
+        formatStringResult = StringFormatSecondsHighPrecision.format(seconds, "%f");
         System.out.println(formatStringResult);
 
         long elapsedTime = System.currentTimeMillis() - startTime;
