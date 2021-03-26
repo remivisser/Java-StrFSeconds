@@ -1,3 +1,9 @@
+# String Format Seconds - Summary
+
+StringFormatSeconds is a simple Java Program converting seconds into 
+logical time units being: weeks, days, hours, minutes milli-and 
+microseconds. It can be used to display seconds in a user friendly way.
+
 # String Format Seconds
 
 Return a string representing number of seconds formatted according an
@@ -11,7 +17,6 @@ the formatString. Minutes may accumulate over 59 if hours are not
 specified in the formatString.
 This function rounds down. A time unit will only accumulate when "all 
 it's seconds have passed".
-
 
 ## Description
 ---
@@ -64,11 +69,13 @@ Example: nDecimal=3 will show 0.5 seconds as 0.500
 
 
 ## Return Values
+---
 Returns a string formatted according formatString using the given 
 seconds. 
 
 
 ## Errors
+---
 Throws IllegalArgumentException when seconds is smaller than 0.  
 Throws IllegalArgumentException when nDecimal is smaller than 0.
 
