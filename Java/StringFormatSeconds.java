@@ -1,44 +1,37 @@
-// import java.util.stream.Collectors;
-// import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-
 //import java.util.*;
-
+//import java.lang.*;
 
 class StringFormatSeconds {
-    public static void main(String[] args) {
-        // See div mod calculations, using a double or float loses
-        // precision? 4000 seconds returns 4000000010.099 milliseconds.
-        //
-        // >>> System.out.println(4000/.000001);
-        // 4000000010.099029064178466796875
-        //
-        // Maybe proceed to BigDecimal for more precision:
-        //
-        // >>> BigDecimal test1 = new BigDecimal(4000/.000001);
-        // >>> System.out.println( test1.toPlainString());
-        // 4000000000
 
-        double seconds;
-        String formatStringResult;
+    public static void main(String[] args) {
+
+        // Max size seconds (double) = Integer.MAX_VALUE = 2147483647
+        // https://stackoverflow.com/a/32252952
+        // See StringFormatSecondsHighPrecision.java for higher
+        // precision.
 
         // debug timings
         long startTime = System.currentTimeMillis();
+
+        double seconds;
+        String formatStringResult;
 
         //seconds=90;
         //seconds=1;
         //seconds=4000;
         seconds=4000.1234567890;
         seconds=4000.9999;
+        seconds=2147483647;
 
-        formatStringResult = format(90, "%h:%m:%s", -2);
-        System.out.println(formatStringResult);
+        //formatStringResult = format(90, "%h:%m:%s", 2);
+        //System.out.println(formatStringResult);
 
-        formatStringResult = format(seconds, "%h2:%m2:%s2", 3);
+        //formatStringResult = format(seconds, "%h2:%m2:%s2", 3);
+        formatStringResult = format(seconds, "Days=%d7 %h2:%m2:%s2", 0);
         System.out.println(formatStringResult);
 
         formatStringResult = format(seconds, "%f", 3);
@@ -46,32 +39,29 @@ class StringFormatSeconds {
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         System.out.println("[Elapsed in " + elapsedTime + "ms]");
-
     }
 
-
     public static String format(double seconds, String formatString, int nDecimal) {
-        String smallestTimeUnitInFormatString = null;
-        //double unitSize;
+        String smallestUnitInFormatString = null;
         double unitSize;
-        String unitSizeString;
+        String unitSizePlainString;
         String unitLeftPad;
-        int i;
+        int indexOfUnit;
 
         // Input validation
         // https://docs.oracle.com/javase/8/docs/api/java/lang/IllegalArgumentException.html
         if (seconds < 0)
-            throw new IllegalArgumentException("Seconds must be greater than or equal to 0");
-
+            throw new IllegalArgumentException(
+                "Seconds must be greater than or equal to 0");
         if (nDecimal < 0)
-            throw new IllegalArgumentException("Decimal must be greater than or equal to 0");
-
+            throw new IllegalArgumentException(
+                "Decimal must be greater than or equal to 0");
 
         //System.out.println(seconds);
 
         // Arrays in Java
         // Instead of a normal Hashmap create a LinkedHashMap that will
-        // iterate in the order in which the entries were put into the map
+        // iterate in the order in which the entries were put into the map.
         // https://stackoverflow.com/a/17910409
         // https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/LinkedHashMap.html
         LinkedHashMap<String,Float> units = new LinkedHashMap<>();
@@ -83,22 +73,27 @@ class StringFormatSeconds {
         units.put("l", (float).001);
         units.put("f", (float).000001);
 
+        // Determine the smallest time unit in the formatString and
+        // set variable accordingly. If no smallest unit found return
+        // unaltered formatString.
         for (Map.Entry<String,Float> unit : units.entrySet())
-            //System.out.println(unit.getKey() + " = " + unit.getValue());
-            //System.out.println(formatString.indexOf( "%"+unit.getKey()));
             if (formatString.indexOf("%"+unit.getKey()) != -1)
-                smallestTimeUnitInFormatString = unit.getKey();
-
-        //System.out.println("smallestTimeUnitInFormatString = %" + smallestTimeUnitInFormatString);
-        if (smallestTimeUnitInFormatString == null)
+                smallestUnitInFormatString = unit.getKey();
+        if (smallestUnitInFormatString == null)
             return formatString;
 
+        // For every time unit in units...
         for (Map.Entry<String,Float> unit : units.entrySet()) {
+            // Check if this time unit is in formatString, if not
+            // continue.
             if (formatString.indexOf("%"+unit.getKey()) == -1)
                 continue;
 
             // divmod
             // unit_size, seconds = divmod(seconds, unit['secs'])
+            //
+            // Get the quotient of this units seconds and the
+            // available seconds by flooring the division.
             //
             // # Cast to int Math.floor to prevent 'error:
             // incompatible types: possible lossy conversion from
@@ -107,67 +102,79 @@ class StringFormatSeconds {
             // numbers. (error: integer number too large)
             //unitSize = (int)Math.floor(seconds / unit.getValue());
             unitSize = Math.floor(seconds / unit.getValue());
-            //System.out.println(seconds);
-            //System.out.println(unit.getValue());
-            //System.out.println(seconds / unit.getValue());
-            //System.out.println(unitSize);
+            // Assign the modulus (remainder) to seconds.
             seconds = seconds % unit.getValue();
-            // System.out.println( "divmod seconds % unit seconds " + seconds + " " + unit.getValue());
 
-            if (unit.getKey() == smallestTimeUnitInFormatString)
+
+            // Smallest time unit; add the remaing seconds as
+            // fractions of unit size.
+            if (unit.getKey() == smallestUnitInFormatString)
                 // unit_size += 1 / unit['secs'] * seconds
                 unitSize += 1 / unit.getValue() * seconds;
 
 
-            // calculations are done, proceed with formatting
+            // calculations for this unit are done, proceed with
+            // formatting.
 
 
-            // Zeroes left padding, this is a String datatype extracted
-            // integer from formatString, make sure to cast in String.
-            // format() function
+            // Zeroes left padding, this is the one integer directly
+            // following the format specifier (%s2). (It is a String
+            // for the replacement, later cast to an integer in
+            // String.format())
+            //
+            // Determine if this unit has a left padding integer and
+            // set unitLeftPad accordingly.
             unitLeftPad = "";
-            i = formatString.indexOf("%" + unit.getKey());
-            try {
-                Integer.parseInt(formatString.substring(i+2, i+3));
-                unitLeftPad = formatString.substring(i+2, i+3);
-            } catch (Exception e) {
-            }
+            indexOfUnit = formatString.indexOf("%" + unit.getKey());
+            if (formatString.length() > indexOfUnit + 2)
+                if (isInteger(formatString.substring(indexOfUnit+2, indexOfUnit+3)))
+                   unitLeftPad = formatString.substring(indexOfUnit+2, indexOfUnit+3);
 
-            // Check for smallest and non smallest entries
-            if (unit.getKey() != smallestTimeUnitInFormatString){
+            // Check for smallest and non-smallest entries
+            if (unit.getKey() != smallestUnitInFormatString) {
+
                 // Non smallest entries
+                //
                 // All non smallest timeunits do not have decimals.
-                // Disable scientific notation from double
-                // https://stackoverflow.com/a/47809639
-                //unitSizeString = String.valueOf((int)unitSize);
-                unitSizeString = new BigDecimal(unitSize).toPlainString();
-                // Leading zeroes, no decimals, nor decimal sign; set
-                // amount of spaces to unitLeftPad.
+                // Use BigDecimal.toPlainString to cast the double
+                // unitSize to the String unitSizePlainString.
+                // BigDecimal does not show decimals (.0) nor does it
+                // show scientific notation as String.valueOf does.
+                unitSizePlainString = new BigDecimal(unitSize).toPlainString();
+
+                // Add leading zeroes, no decimals nor decimal sign
+                // set size to size of unitLefPad.
                 if (unitLeftPad != "")
-                    unitSizeString = String.format("%" + (int)Integer.parseInt(unitLeftPad) +"s", unitSizeString).replace(" ", "0");
+                    //unitSizePlainString = String.format("%" + Integer.parseInt(unitLeftPad) +"s", unitSizePlainString).replace(" ", "0");
+                    unitSizePlainString = String.format("%" + unitLeftPad +"s", unitSizePlainString).replace(" ", "0");
 
             } else {
 
                 // Smallest entry
-                // BigDecimal scale
-                // https://stackoverflow.com/a/13136669
-                // BigDecimal Oneliner
-                // https://stackoverflow.com/a/63067040
-                // The BigDecimal.setScale() will always return zeroes
-                // as much as the scale is set (nDecimal)
+                //
+                // Use BigDecimal.setScale(); it will always return
+                // zeroes as much as the scale is set.
                 // >>> System.out.println(new BigDecimal(0).setScale(3, RoundingMode.FLOOR).toPlainString());
                 // 0.000
-                unitSizeString = new BigDecimal(unitSize).setScale(nDecimal, RoundingMode.FLOOR).toPlainString();
+                // https://stackoverflow.com/a/13136669
+                // https://stackoverflow.com/a/63067040
+                unitSizePlainString = new BigDecimal(unitSize).setScale(nDecimal, RoundingMode.FLOOR).toPlainString();
+
                 // Leading zeroes
-                if (unitLeftPad != "")
-                    // # Leading zeroes: Set '0%s.' to {ndecimal} +
-                    // # {unit_rjust_length} + 1 (the decimal sign)
-                    unitSizeString = String.format("%" + ((int)Integer.parseInt(unitLeftPad) + nDecimal + 1) +"s", unitSizeString).replace(" ", "0");
+                if (unitLeftPad != "") {
+                    // Add leading zeroes size of unitLefPad. Different
+                    // handling required for units with and without decimals.
+                    if (nDecimal == 0) {
+                        unitSizePlainString = String.format("%" + unitLeftPad +"s", unitSizePlainString).replace(" ", "0");
+                    } else {
+                        unitSizePlainString = String.format("%" + String.valueOf(Integer.parseInt(unitLeftPad) + nDecimal + 1) +"s", unitSizePlainString).replace(" ", "0");
+                    }
+                }
 
             }
 
             // Replacement
-            formatString = formatString.replace("%" + unit.getKey() + unitLeftPad, unitSizeString);
+            formatString = formatString.replace("%" + unit.getKey() + unitLeftPad, unitSizePlainString);
         }
 
         return formatString;
@@ -183,5 +190,18 @@ class StringFormatSeconds {
     public static String format( double seconds) {
         return format(seconds, "%h2:%m2:%s", 3);
     }
+
+    // Used to determine if adjecent character of a format specifier
+    // is an integer.
+    // https://simplesolution.dev/java-check-string-is-valid-integer/
+    private static boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+
+   }
 
 }
