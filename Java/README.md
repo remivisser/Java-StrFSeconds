@@ -5,9 +5,10 @@ explicit format string. Format string specifies the time units to
 display.  
 Time untis are weeks, days, hours, minutes, seconds, milliseconds 
 and microseconds. All time units will fill up until their adjecent  
-(greater) is reached.  
-For example: Hours may accumulate over 23 if days are not specified and 
-minutes may accumulate over 59 if hours are not specified.  
+(greater) time unit is reached.  
+For example: Hours may accumulate over 23 if days are not specified in 
+the formatString. Minutes may accumulate over 59 if hours are not 
+specified in the formatString.
 This function rounds down. A time unit will only accumulate when "all 
 it's seconds have passed".
 
@@ -16,7 +17,7 @@ it's seconds have passed".
 ---
 ```
 StringFormatSeconds->format(double seconds, String formatString, int nDecimal) :
-string|IllegalArgumentException
+String|IllegalArgumentException
 ```
 
 ## Parameters
