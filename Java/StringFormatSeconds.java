@@ -26,27 +26,33 @@ class StringFormatSeconds {
         seconds=4000.1234567890;
         seconds=4000.9999;
         seconds=2147483647;
+        seconds=.999;
+        seconds=.5;
 
         //formatStringResult = format(90, "%h:%m:%s", 2);
         //System.out.println(formatStringResult);
 
-        //formatStringResult = format(seconds, "%h2:%m2:%s2", 3);
-        formatStringResult = format(seconds, "Days=%d7 %h2:%m2:%s2", 0);
+        formatStringResult = format(seconds, "Days=%d7 %h2:%m2:%s2.%f", 0);
+        formatStringResult = format(seconds, "Days=%d7 %h2:%m2:%s2", 3);
         System.out.println(formatStringResult);
 
-        formatStringResult = format(seconds, "%f", 3);
+        //formatStringResult = format(seconds, "%f", 3);
+        //System.out.println(formatStringResult);
+
+        formatStringResult = format(seconds, "%s5", 0);
         System.out.println(formatStringResult);
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         System.out.println("[Elapsed in " + elapsedTime + "ms]");
+
     }
 
     public static String format(double seconds, String formatString, int nDecimal) {
         String smallestUnitInFormatString = null;
         double unitSize;
+        BigDecimal unitSizeBD;
         String unitSizePlainString;
-        String unitLeftPad;
-        int indexOfUnit;
+        String unitLeftPadSize;
 
         // Input validation
         // https://docs.oracle.com/javase/8/docs/api/java/lang/IllegalArgumentException.html
@@ -93,7 +99,7 @@ class StringFormatSeconds {
             // unit_size, seconds = divmod(seconds, unit['secs'])
             //
             // Get the quotient of this units seconds and the
-            // available seconds by flooring the division.
+            // available seconds; floor the division.
             //
             // # Cast to int Math.floor to prevent 'error:
             // incompatible types: possible lossy conversion from
@@ -105,9 +111,8 @@ class StringFormatSeconds {
             // Assign the modulus (remainder) to seconds.
             seconds = seconds % unit.getValue();
 
-
             // Smallest time unit; add the remaing seconds as
-            // fractions of unit size.
+            // fractions of unit size
             if (unit.getKey() == smallestUnitInFormatString)
                 // unit_size += 1 / unit['secs'] * seconds
                 unitSize += 1 / unit.getValue() * seconds;
@@ -116,19 +121,6 @@ class StringFormatSeconds {
             // calculations for this unit are done, proceed with
             // formatting.
 
-
-            // Zeroes left padding, this is the one integer directly
-            // following the format specifier (%s2). (It is a String
-            // for the replacement, later cast to an integer in
-            // String.format())
-            //
-            // Determine if this unit has a left padding integer and
-            // set unitLeftPad accordingly.
-            unitLeftPad = "";
-            indexOfUnit = formatString.indexOf("%" + unit.getKey());
-            if (formatString.length() > indexOfUnit + 2)
-                if (isInteger(formatString.substring(indexOfUnit+2, indexOfUnit+3)))
-                   unitLeftPad = formatString.substring(indexOfUnit+2, indexOfUnit+3);
 
             // Check for smallest and non-smallest entries
             if (unit.getKey() != smallestUnitInFormatString) {
@@ -142,12 +134,6 @@ class StringFormatSeconds {
                 // show scientific notation as String.valueOf does.
                 unitSizePlainString = new BigDecimal(unitSize).toPlainString();
 
-                // Add leading zeroes, no decimals nor decimal sign
-                // set size to size of unitLefPad.
-                if (unitLeftPad != "")
-                    //unitSizePlainString = String.format("%" + Integer.parseInt(unitLeftPad) +"s", unitSizePlainString).replace(" ", "0");
-                    unitSizePlainString = String.format("%" + unitLeftPad +"s", unitSizePlainString).replace(" ", "0");
-
             } else {
 
                 // Smallest entry
@@ -158,23 +144,33 @@ class StringFormatSeconds {
                 // 0.000
                 // https://stackoverflow.com/a/13136669
                 // https://stackoverflow.com/a/63067040
-                unitSizePlainString = new BigDecimal(unitSize).setScale(nDecimal, RoundingMode.FLOOR).toPlainString();
-
-                // Leading zeroes
-                if (unitLeftPad != "") {
-                    // Add leading zeroes size of unitLefPad. Different
-                    // handling required for units with and without decimals.
-                    if (nDecimal == 0) {
-                        unitSizePlainString = String.format("%" + unitLeftPad +"s", unitSizePlainString).replace(" ", "0");
-                    } else {
-                        unitSizePlainString = String.format("%" + String.valueOf(Integer.parseInt(unitLeftPad) + nDecimal + 1) +"s", unitSizePlainString).replace(" ", "0");
-                    }
-                }
-
+                //
+                // >>> test with .999
+                // Shows .998 when using below code:
+                // >>> unitSizePlainString = new BigDecimal(unitSize).setScale(nDecimal, RoundingMode.DOWN).toPlainString();
+                // Solution:
+                // Make sure to pass a BigDecimal to Bigdecimal
+                // https://stackoverflow.com/a/63067040
+                //BigDecimal unitSizeBD = BigDecimal.valueOf(unitSize);
+                unitSizeBD = BigDecimal.valueOf(unitSize);
+                unitSizePlainString = new BigDecimal(unitSizeBD.toPlainString()).setScale(nDecimal, RoundingMode.DOWN).toPlainString();
             }
 
+            // Zeroes left padding
+            // This is configured by a single integer [1-9] directly
+            // following the format specifier (%s2). It is a String
+            // value for replacing formatString cast to an integer in 
+            // String.format())
+            //
+            // Determine if this unit has left padding configured and 
+            // write them if needed.
+            unitLeftPadSize = leftPadParameterValue(formatString, unit.getKey());
+            if (unitLeftPadSize != "") 
+                unitSizePlainString = leftPadZeroes(unitSizePlainString, Integer.parseInt(unitLeftPadSize));
+
+
             // Replacement
-            formatString = formatString.replace("%" + unit.getKey() + unitLeftPad, unitSizePlainString);
+            formatString = formatString.replace("%" + unit.getKey() + unitLeftPadSize, unitSizePlainString);
         }
 
         return formatString;
@@ -201,7 +197,35 @@ class StringFormatSeconds {
         } catch (Exception ex) {
             return false;
         }
+    }
 
-   }
+    private static String leftPadParameterValue(String formatString, String unitName){
+        String leftPadValue = "";
+        int indexOfUnit;
+
+        indexOfUnit = formatString.indexOf("%" + unitName);
+        if (formatString.length() > indexOfUnit + 2)
+            if (isInteger(formatString.substring(indexOfUnit+2, indexOfUnit+3)))
+               leftPadValue = formatString.substring(indexOfUnit+2, indexOfUnit+3);
+        
+        return leftPadValue;
+    }
+
+    private static String leftPadZeroes( String s, int nZeroes){
+        // Add leading zeroes size of unitLefPad. Different
+        // handling required for units with and without decimals.
+        if (s.indexOf(".") == -1) {
+            s = String.format("%" + nZeroes +"s", s).replace(" ", "0");
+        } else {
+            s = String.format("%" + String.valueOf( s.length() - s.indexOf(".") + nZeroes ) +"s", s).replace(" ", "0");
+        }
+        return s;
+    }
+
+    // Taken care of by BigDecimal.setScale()
+    //private static String rpadZeroes( String s, int nZeroes){
+    //    s = String.format("%1$-" + (s.indexOf(".") + 1 + nZeroes) +"s", s).replace(" ", "0");
+    //    return s;
+    //}
 
 }
