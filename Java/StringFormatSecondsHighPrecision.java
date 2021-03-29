@@ -11,33 +11,28 @@ import java.math.RoundingMode;
 
 public class StringFormatSecondsHighPrecision {
     public static void main(String[] args) {
-
-
-        System.out.println(format(new BigDecimal(90), "%o seconds is %f microseconds", 9));
-
     }
 
     /**
-    * Converting seconds into logical time units being: weeks, days, 
-    * hours, minutes, milli-and microseconds.
+    * Converting seconds into logical time units being: weeks, days,
+    * hours, minutes, seconds and microseconds.
     *
-    * @param    seconds         The seconds to format. 
-    * @param    formatString    A String containing format specifiers 
+    * @param    seconds         The seconds to format.
+    * @param    formatString    A String containing format specifiers
     *                           controlling the display of the seconds.
     *                           Available format specifiers are:
-    *                           
-    *                           %w for weeks                                
-    *                           %d for days                                 
-    *                           %h for hours                                
-    *                           %m for minutes                              
-    *                           %s for seconds                              
-    *                           %l for milliseconds (0.001 second)          
-    *                           %f for microseconds (0.000001 second)       
+    *
+    *                           %w for weeks
+    *                           %d for days
+    *                           %h for hours
+    *                           %m for minutes
+    *                           %s for seconds
+    *                           %f for microseconds (0.000001 second)
     *                           %o for the unchanged seconds value
-    * @param    nDecimal        The number of decimals applied to the 
-    *                           smallest format specifier time unit.  
-    * @return                   A String with all format specifiers 
-    *                           replaced for the given seconds. 
+    * @param    nDecimal        The number of decimals applied to the
+    *                           smallest format specifier time unit.
+    * @return                   A String with all format specifiers
+    *                           replaced for the given seconds.
     */
     public static String format(BigDecimal seconds, String formatString, int nDecimal) {
         BigDecimal unitSize = new BigDecimal(0);
@@ -53,11 +48,10 @@ public class StringFormatSecondsHighPrecision {
         units.put("h", new BigDecimal(3600));
         units.put("m", new BigDecimal(60));
         units.put("s", new BigDecimal(1));
-        units.put("l", new BigDecimal(.001));
         units.put("f", new BigDecimal(.000001));
 
         // Determine the smallest time unit in the formatString and
-        // set variable accordingly. If no smallest time unit found 
+        // set variable accordingly. If no smallest time unit found
         // return unaltered formatString.
         for (Map.Entry<String,BigDecimal> unit : units.entrySet())
             if (formatString.indexOf("%"+unit.getKey()) != -1)
@@ -73,7 +67,7 @@ public class StringFormatSecondsHighPrecision {
 
         // For every time unit in units...
         for (Map.Entry<String,BigDecimal> unit : units.entrySet()) {
-            // Check if this time unit is defined in the formatString, 
+            // Check if this time unit is defined in the formatString,
             // if not continue.
             if (formatString.indexOf("%"+unit.getKey()) == -1)
                 continue;
@@ -94,7 +88,7 @@ public class StringFormatSecondsHighPrecision {
             // secondsDivMod = secondsDivMod.remainder(unit.getValue());
             seconds = seconds.remainder(unit.getValue());
 
-            // Smallest time unit; add the remaing seconds as fractions 
+            // Smallest time unit; add the remaing seconds as fractions
             // of this time unit's size.
             if (unit.getKey() == smallestUnitInFormatString)
                 // unitSize += 1 / unit.getValue() * seconds;
@@ -111,19 +105,19 @@ public class StringFormatSecondsHighPrecision {
             // Zeroes left padding
             //
             // This is configured by a single integer [0-9] directly
-            // following the format specifier (%s2). unitLeftPadSize is 
-            // a String for replacing formatString, it is cast to an 
+            // following the format specifier (%s2). unitLeftPadSize is
+            // a String for replacing formatString, it is cast to an
             // integer in String.format() call.
             //
-            // Determine if this unit has left padding configured and 
+            // Determine if this unit has left padding configured and
             // write them if needed.
             unitLeftPadSize = leftPadParameterValue(formatString, unit.getKey());
-            if (unitLeftPadSize != "") 
+            if (unitLeftPadSize != "")
                 unitSizePlainString = leftPadZeroes(unitSizePlainString, Integer.parseInt(unitLeftPadSize));
 
             // Replacement
             //
-            // Replace current time unit plus left padd parameter by 
+            // Replace current time unit plus left padd parameter by
             // unitSizePlainString.
             formatString = formatString.replace("%" + unit.getKey() + unitLeftPadSize, unitSizePlainString);
 
@@ -144,7 +138,7 @@ public class StringFormatSecondsHighPrecision {
     }
 
     /**
-    * Method overload for format() with default arguments for 
+    * Method overload for format() with default arguments for
     * formatString and precision.
     * @param    seconds         Seconds to be formatted
     * @return                   String returned from format()
@@ -154,15 +148,15 @@ public class StringFormatSecondsHighPrecision {
     }
 
     /**
-    * Remove .0$ from string, used for original passed seconds %o 
+    * Remove .0$ from string, used for original passed seconds %o
     * replacement
     * @param    s               String representing seconds passed
     * @return                   Seconds with .0$ removed or unaltered
     */
     private static String removeZeroDecimal(String s) {
-        // Make sure to add check for existance of decimal sign to 
+        // Make sure to add check for existance of decimal sign to
         // prevent StringIndexOutOfBoundsException
-        if (s.indexOf(".") != -1 && s.substring(s.indexOf("."), s.length()).equals(".0")) 
+        if (s.indexOf(".") != -1 && s.substring(s.indexOf("."), s.length()).equals(".0"))
             s = s.replace(".0", "");
         return s;
     }
@@ -174,7 +168,7 @@ public class StringFormatSecondsHighPrecision {
     * https://simplesolution.dev/java-check-string-is-valid-integer/
     *
     * @param  s                 String to be evaluated
-    * @return                   true if the String s is an integer; 
+    * @return                   true if the String s is an integer;
     *                           false otherwise.
     */
     private static boolean isInteger(String s) {
@@ -185,15 +179,15 @@ public class StringFormatSecondsHighPrecision {
             return false;
         }
     }
-    
+
     /**
-    * Retrieve the zero left padding parameter for unitName in 
+    * Retrieve the zero left padding parameter for unitName in
     * formatString. Retrieves '2' in '%s2'
     *
-    * @param  formatString      The complete formatstring 
+    * @param  formatString      The complete formatstring
     * @param  unitName          The unit name (w/d/h/m/s/l/f)
-    * @return                   The adjecent left padd parameter integer 
-    *                           for %unitName or an empty String if none 
+    * @return                   The adjecent left padd parameter integer
+    *                           for %unitName or an empty String if none
     *                           found
     */
     private static String leftPadParameterValue(String formatString, String unitName){
@@ -204,12 +198,12 @@ public class StringFormatSecondsHighPrecision {
         if (formatString.length() > indexOfUnit + 2)
             if (isInteger(formatString.substring(indexOfUnit+2, indexOfUnit+3)))
                leftPadValue = formatString.substring(indexOfUnit+2, indexOfUnit+3);
-        
+
         return leftPadValue;
     }
 
     /**
-    * Returns a String left-padded with zeroes to the amount of 
+    * Returns a String left-padded with zeroes to the amount of
     * nZeroes, nZeroes applies to the amount of zeroes added before the
     * decimal sign. Modifies 3.0 into 03.0 if nZeroes is 2
     *
@@ -224,7 +218,7 @@ public class StringFormatSecondsHighPrecision {
             s = String.format("%" + String.valueOf(s.length() - s.indexOf(".") + nZeroes) +"s", s);
         }
         s = s.replace(" ", "0");
-        
+
         return s;
     }
 
