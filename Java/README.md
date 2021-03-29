@@ -32,18 +32,18 @@ This function rounds down, decimals after nDecimal are truncated. This
 is designed to enforce that a time unit will only accumulate when "all 
 it's seconds have passed".
 
-## Description
+# Description
 ```
 StringFormatSeconds->format(double seconds, String formatString, int nDecimal) :
 String|IllegalArgumentException
 ```
 
-## Parameters
+# Parameters
 
-### seconds
+## seconds
 The seconds to format. Datatype is a double.
 
-### formatString
+## formatString
 A String containing format specifiers controlling the display of the 
 seconds.
 
@@ -69,24 +69,24 @@ Example: %s**3** will show 12 seconds as 012
 Example: %s**5** will show 123 seconds as 00123
   
   
-### nDecimal
+## nDecimal
 The number of decimals applied to the smallest format specifier unit.  
 Decimals are shown matching the size of nDecimal.
 
 Example: nDecimal=3 will show 0.5 seconds as 0.500
 
 
-## Return Values
+# Return Values
 Returns a String with all format specifiers replaced for the given 
 seconds. 
 
 
-## Errors
+# Errors
 Throws IllegalArgumentException when seconds is less than 0.  
 Throws IllegalArgumentException when nDecimal is less than 0.
 
 
-## Examples
+# Examples
 ```
     // Show seconds in minutes. Two decimals
     double seconds=90;
@@ -111,6 +111,6 @@ Throws IllegalArgumentException when nDecimal is less than 0.
 ```
 
 
-# Python
+### Python
 This is a Java version of the Python package
 [Python-strfseconds](https://github.com/remivisser/Python-strfseconds)
