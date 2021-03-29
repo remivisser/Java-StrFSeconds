@@ -1,8 +1,9 @@
 # String Format Seconds - Summary
 
 StringFormatSeconds is a simple Java Program converting seconds into 
-logical time units being: weeks, days, hours, minutes, milli-and 
-microseconds. It can be used to display seconds in a user friendly way.
+logical time units. Available time units are: weeks, days, hours, 
+minutes, milli-and microseconds. It can be used to display seconds in a
+user friendly way.
 
 # String Format Seconds
 
@@ -10,30 +11,8 @@ Return a string representing number of seconds formatted according an
 explicit format string. The formatString contains format specifiers 
 controlling which time units should be shown. (see list of format 
 specifiers below)
-Time untis are weeks, days, hours, minutes, seconds, milli- and 
-microseconds. All time units will fill up until their adjecent  
-(greater) time unit is reached.  
-For example: Hours may accumulate over 23 if Days are not specified in 
-the formatString. Likewise Minutes may accumulate over 59 if Hours are 
-not specified in the formatString.
-This function rounds down. A time unit will only accumulate when "all 
-it's seconds have passed".
-
-## Description
-```
-StringFormatSeconds->format(double seconds, String formatString, int nDecimal) :
-String|IllegalArgumentException
-```
-
-## Parameters
-
-### seconds
-The seconds to format. 
-
-### formatString
-A String containing format specifiers controlling the display of the 
-seconds.
-
+Time units are weeks, days, hours, minutes, seconds, milli- and 
+microseconds. 
 All time units accumulate until their next greater time unit that is 
 specified in the formatstring is found. If a greater time unit is 
 reached then the time unit will reset to 0 and the greater time will 
@@ -49,6 +28,25 @@ accumulate to 24 and beyond.
 Likewise Minutes will accumulate over 59 when hours is not defined etc 
 etc.
 
+This function rounds down, decimals after nDecimal are truncated. This 
+is designed to enforce that a time unit will only accumulate when "all 
+it's seconds have passed".
+
+## Description
+```
+StringFormatSeconds->format(double seconds, String formatString, int nDecimal) :
+String|IllegalArgumentException
+```
+
+## Parameters
+
+### seconds
+The seconds to format. Datatype is a double.
+
+### formatString
+A String containing format specifiers controlling the display of the 
+seconds.
+
 **The following format specifiers are recognized in the formatString parameter**
 
 Format specifier | Description                          | Example returned values
@@ -61,7 +59,6 @@ Format specifier | Description                          | Example returned value
 %l               | milliseconds (0.001 second)          | Example: 3000 for 3 seconds
 %f               | microseconds (0.000001 second)       | Example: 7000000 for 7 seconds
 %o               | the unchanged seconds value
-  
   
   
 **Left padding format specifiers with zeroes**
@@ -91,15 +88,29 @@ Throws IllegalArgumentException when nDecimal is less than 0.
 
 ## Examples
 ```
-String formatStringResult;
-seconds=4000.123456;
+    // Show seconds in minutes. Two decimals
+    double seconds=90;
+    String formatStringResult = StringFormatSeconds.format(seconds, "%o seconds is %m minutes", 2);
+    System.out.println(formatStringResult);
 
-formatStringResult = format(seconds, "Days=%d7 %h2:%m2:%s2.%f", 0);
-System.out.println(formatStringResult);
+90 seconds is 1.50 minutes
+```
+```
+    seconds = 4000.1234567890;
+    formatStringResult = StringFormatSeconds.format(seconds, "%o seconds is Days=%d %h2:%m2:%s2 milliseconds=%l microseconds=%f", 6);
+    System.out.println(formatStringResult);
+
+4000.123456789 seconds is Days=0 01:06:40 milliseconds=123 microseconds=456.789000
+```
+```
+    seconds = 2147483647;
+    formatStringResult = StringFormatSeconds.format(seconds, "%o seconds is Weeks=%w, Days=%d %h2:%m2:%s2", 3);
+    System.out.println(formatStringResult);
+
+2.147483647E9 seconds is Weeks=3550, Days=5 03:14:07.000
 ```
 
-
-
+```
 # Python
 This is a Java version of the Python package
 [Python-strfseconds](https://github.com/remivisser/Python-strfseconds)
