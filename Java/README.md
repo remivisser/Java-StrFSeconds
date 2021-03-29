@@ -110,7 +110,7 @@ Throws IllegalArgumentException when nDecimal is less than 0.
 2.147483647E9 seconds is Weeks=3550, Days=5 03:14:07.000
 ```
 
-```
+
 # Python
 This is a Java version of the Python package
 [Python-strfseconds](https://github.com/remivisser/Python-strfseconds)
