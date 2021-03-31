@@ -6,7 +6,7 @@ class TestPrecisionBigDecimalvsDouble {
         BigDecimal secondsBD;
 
         // Modulo division in StringFormatSeconds returned incorrect
-        // results for '550.194812'
+        // results for '550.194812'.
         // Test below reproduces it. (limitation of precision double)
         // Updated module calculation to be handled by BigDecimal.
         seconds=550.194812;
