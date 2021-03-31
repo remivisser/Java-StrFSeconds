@@ -18,7 +18,6 @@ class StringFormatSeconds {
     * @param    formatString    A String containing format specifiers
     *                           controlling the display of the seconds.
     *                           Available format specifiers are:
-    *
     *                           %w for weeks
     *                           %d for days
     *                           %h for hours

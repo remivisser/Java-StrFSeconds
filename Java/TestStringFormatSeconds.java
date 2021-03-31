@@ -70,11 +70,10 @@ class TestStringFormatSeconds {
         System.out.println(sfsResult);
 
 
-
         System.out.println("Fractions (modulo) test\n---");
         // Modulo
         // Test below failed in earlier version, changed modulo
-        // into using BigDecimal
+        // calculation into using BigDecimal
         seconds=550.194812;
         sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %h2:%m2:%s2", 6);
         System.out.println(sfsResult);

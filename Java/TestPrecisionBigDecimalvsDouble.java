@@ -13,6 +13,6 @@ class TestPrecisionBigDecimalvsDouble {
         secondsBD=BigDecimal.valueOf(550.194812);
 
         System.out.println("Modulo using BigDecimal: " + secondsBD.remainder(new BigDecimal(60)));
-        System.out.println("Modulo using Double: " + seconds % 60);
+        System.out.println("Modulo using Double: " + (double)seconds % 60);
     }
 }
