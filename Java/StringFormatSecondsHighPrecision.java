@@ -1,5 +1,3 @@
-// import java.util.stream.Collectors;
-// import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,7 +15,11 @@ public class StringFormatSecondsHighPrecision {
     * Converting seconds into logical time units being: weeks, days,
     * hours, minutes, seconds and microseconds.
     *
-    * @param    seconds         The seconds to format.
+    * @param    seconds         The seconds to format. Type is
+    *                           BigDecimal, make sure to correctly pass
+    *                           it, see TestStringFormatSecondsHighPrecision.
+    *                           For testing use `new BigDecimal("{Double}")`
+    *                           - with quotes.
     * @param    formatString    A String containing format specifiers
     *                           controlling the display of the seconds.
     *                           Available format specifiers are:
@@ -35,20 +37,32 @@ public class StringFormatSecondsHighPrecision {
     *                           replaced for the given seconds.
     */
     public static String format(BigDecimal seconds, String formatString, int nDecimal) {
+    // public static String format(double seconds, String formatString, int nDecimal) {
         BigDecimal unitSize = new BigDecimal(0);
         String smallestUnitInFormatString = null;
         String unitSizePlainString;
         String unitLeftPadSize;
-        //BigDecimal secondsDivMod = new BigDecimal(seconds);
-        //BigDecimal secondsDivMod = new BigDecimal(seconds.toPlainString());
 
+        // Available time units
+        //
+        // Create a LinkedHashMap (Array) for all available time units.
+        // Instead of a normal Hashmap create a LinkedHashMap; a
+        // LinkedHashMap iterates in the order in which the entries
+        // were put into the map. It is crucial that timeunits will be
+        // processed from large (weeks) to small (microseconds).
         LinkedHashMap<String,BigDecimal> units = new LinkedHashMap<>();
-        units.put("w", new BigDecimal(604800));
-        units.put("d", new BigDecimal(86400));
-        units.put("h", new BigDecimal(3600));
-        units.put("m", new BigDecimal(60));
-        units.put("s", new BigDecimal(1));
-        units.put("f", new BigDecimal(.000001));
+        // !!! Make sure to use `BigDecimal.valueOf(1)` and NOT
+        // `new BigDecimal(1)` !!!
+        // Test with:
+        // >>> System.out.println(format(.001001, "%o %s %l %f", 6));
+        // https://stackoverflow.com/a/16774279
+        units.put("w", BigDecimal.valueOf(604800));
+        units.put("d", BigDecimal.valueOf(86400));
+        units.put("h", BigDecimal.valueOf(3600));
+        units.put("m", BigDecimal.valueOf(60));
+        units.put("s", BigDecimal.valueOf(1));
+        units.put("l", BigDecimal.valueOf(.001));
+        units.put("f", BigDecimal.valueOf(.000001));
 
         // Determine the smallest time unit in the formatString and
         // set variable accordingly. If no smallest time unit found
@@ -63,7 +77,9 @@ public class StringFormatSecondsHighPrecision {
         // Replace '%o' with the original passed value for seconds
         // remove .0$ from valueOf() using removeZeroDecimal()
         // formatString = formatString.replace("%o", removeZeroDecimal(String.valueOf(seconds)));
-        formatString = formatString.replace("%o", removeZeroDecimal(seconds.toPlainString()));
+        // formatString = formatString.replace("%o", removeZeroDecimal(seconds.toPlainString()));
+        formatString = formatString.replace(
+            "%o", removeZeroDecimal(seconds.toPlainString()));
 
         // For every time unit in units...
         for (Map.Entry<String,BigDecimal> unit : units.entrySet()) {
@@ -72,27 +88,30 @@ public class StringFormatSecondsHighPrecision {
             if (formatString.indexOf("%"+unit.getKey()) == -1)
                 continue;
 
-            // Since BigDecimal implementation, reset value of
-            // unitSize BigDecimal.
-            // https://coderanch.com/t/534944/java/setting-BigDecimal-variable
+            // Since BigDecimal implementation; reset value of unitSize
+            // BigDecimal.
             unitSize = BigDecimal.ZERO;
 
             // Process the quotient and the remainder (modulo) of this
             // time units seconds from the available seconds.
             //
             // Assign the quotient to unitSize. Divide with precision
-            // set to 0 and RoundingMode to Floor
-            // unitSize = unitSize.add(secondsDivMod.divide(unit.getValue(), 0, RoundingMode.FLOOR));
+            // set to 0 and RoundingMode to Floor.
             unitSize = unitSize.add(seconds.divide(unit.getValue(), 0, RoundingMode.FLOOR));
             // Assign the remainder to seconds
-            // secondsDivMod = secondsDivMod.remainder(unit.getValue());
+            //seconds = seconds.remainder(unit.getValue());
+
+            //System.out.println("---");
+            //System.out.println(seconds.toPlainString());
+            //System.out.println(unit.getValue());
+
             seconds = seconds.remainder(unit.getValue());
 
             // Smallest time unit; add the remaing seconds as fractions
             // of this time unit's size.
+
             if (unit.getKey() == smallestUnitInFormatString)
                 // unitSize += 1 / unit.getValue() * seconds;
-                // unitSize = unitSize.add(secondsDivMod.divide(unit.getValue(), nDecimal, RoundingMode.FLOOR));
                 unitSize = unitSize.add(seconds.divide(unit.getValue(), nDecimal, RoundingMode.FLOOR));
 
 
@@ -101,6 +120,7 @@ public class StringFormatSecondsHighPrecision {
 
 
             unitSizePlainString = unitSize.toPlainString();
+
 
             // Zeroes left padding
             //

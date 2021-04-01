@@ -6,81 +6,71 @@ class TestStringFormatSeconds {
         // StringFormatSeconds; as the format() method is defined
         // static.
         // StringFormatSeconds StringFormatSeconds = new StringFormatSeconds();
-
-        double seconds;
-        BigDecimal secondsBD;
-        String sfsResult;
-
-        // Max size seconds is max size Double which is a lot;
-        // approx. 1.7E308
-        // Make sure to append d to prevent error: integer number too
-        // large (default is Integer)
-        // https://stackoverflow.com/q/4331200
-        //System.out.println(Double.MAX_VALUE);
-        //System.out.println(new BigDecimal(Double.MAX_VALUE).toPlainString());
-
-        // debug timings
-        // to view timings uncomment below and wrap them
-        // around function calls
-        //long startTime;;
+        //
+        // Debug timings
+        // to view timings uncomment below and wrap them around
+        // function calls
+        //long startTime;
         //startTime = System.currentTimeMillis();
         //System.out.println("[Elapsed in " + (System.currentTimeMillis() - startTime) + "ms]");
 
-        System.out.println("Hours, Days, Minutes test\n---");
+        double seconds;
+        String sfsResult;
+
+        System.out.println("\n--- Hours, Days, Minutes test---");
         // Define seconds 50 hours
         seconds=(60*60*50);
         // Show days and minutes
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %d days and %h hours", 2);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %d days and %h hours", 2));
         // Show days only, notice nDecimal=2
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %d days", 2);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %d days", 2));
         // Show hours only
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %h hours", 2);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %h hours", 2));
         // Skip adjecent time unit hours; show days and minutes
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %d days and %m minutes", 2);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %d days and %m minutes", 2));
 
 
-        System.out.println("Stopwatch timer test\n---");
+        System.out.println("\n--- Stopwatch timer test ---");
         // Show seconds as a stopwatch
         seconds=1948.194812;
         // Display microseconds by specifying seconds and setting nDecimal to 6
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %h2:%m2:%s2", 6);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %h2:%m2:%s2", 6));
         // Specify microseconds manually using %f
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %h2:%m2:%s2.%f", 0);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %h2:%m2:%s2.%f", 0));
 
 
-        System.out.println("Fractions and Rounding test\n---");
+        System.out.println("\n--- Fractions and Rounding test ---");
         seconds=90;
         // Show seconds as minutes
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %m minutes", 2);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %m minutes", 2));
 
-        // 0.99999 seconds
         seconds=.999999;
         // Show with three decimals
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %s seconds", 3);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %s seconds", 3));
         // Show without decimals - will show 0 seconds, rounding mode is down
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %s seconds", 0);
-        System.out.println(sfsResult);
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o seconds is %s seconds", 0));
 
 
-        System.out.println("Fractions (modulo) test\n---");
-        // Modulo
-        // Test below failed in earlier version, changed modulo
-        // calculation into using BigDecimal.
-        seconds=550.194812;
-        sfsResult = StringFormatSeconds.format(seconds, "%o seconds is %h2:%m2:%s2", 6);
-        System.out.println(sfsResult);
-
-        secondsBD=BigDecimal.valueOf(1948.194812);
-        System.out.println("Modulo using BigDecimal: " + secondsBD.remainder(new BigDecimal(60)));
-        System.out.println("Modulo using Double: " + 1948.194812 % 60);
+        System.out.println("\n--- Lost precision on microseconds tests ---");
+        // This one fails in StringFormatSeconds but succeeds in
+        // StringFormatSecondsHighPrecision (fails in PHP as well)
+        seconds = 550.194812;
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o %s.%f", 6));
+        // 550.194811.999999 (fails)
+        seconds=550.195917;
+        System.out.println(
+            StringFormatSeconds.format(seconds, "%o %s.%f", 6));
+        // 550.195917 550.195917.000000 (success)
 
     }
 }

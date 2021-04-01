@@ -3,54 +3,27 @@ import java.math.BigDecimal;
 
 class TestStringFormatSecondsHighPrecision {
     public static void main(String[] args) {
-        // StringFormatSecondsHighPrecision StringFormatSecondsHighPrecision = new StringFormatSecondsHighPrecision();
-        // It is not not needed to initiate a new class of
-        // StringFormatSecondsHighPrecision; as the format() method is
-        // defined static.
 
-        BigDecimal seconds;
-        String sfsResult;
+        StringFormatSecondsHighPrecision sfsHighPrecision = new StringFormatSecondsHighPrecision();
 
+        // Small units
+        System.out.println(sfsHighPrecision.format(new BigDecimal(".001001"), "%o seconds is %s seconds, %l milliseconds and %f microseconds", 6));
 
-        seconds=BigDecimal.valueOf(1948.194812);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %h2:%m2:%s2.%l%f", 0);
-        System.out.println(sfsResult);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %h2:%m2:%s2.%f", 0);
-        System.out.println(sfsResult);
+        // Known trouble child
+        System.out.println(sfsHighPrecision.format(new BigDecimal("550.194812"), "%o %s.%f", 6));
 
+        System.out.println(sfsHighPrecision.format(new BigDecimal("1948.194812"), "%o %s.%f", 6));
 
-        seconds=BigDecimal.valueOf(550.194812);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %h hours and %s seconds", 2);
-        System.out.println(sfsResult);
+        // Large numbers
+        System.out.println(sfsHighPrecision.format(new BigDecimal("4000000000"), "%o %f", 6));
 
+        // System.out.println(sfsHighPrecision.format(BigDecimal.valueOf(2147483647000.1234567890), "%o %f", 6));
+        // Fails
+        // Use new BigDecimal("Double") (with quotes!)
+        System.out.println(sfsHighPrecision.format(new BigDecimal("2147483647000.1234567890"), "%o %f", 6));
 
-        seconds=BigDecimal.valueOf(90);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %h hours and %s seconds", 2);
-        System.out.println(sfsResult);
-
-        seconds = BigDecimal.valueOf(4000.1234567890);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is Days=%d %h2:%m2:%s2 milliseconds=%l microseconds=%f", 6);
-        System.out.println(sfsResult);
-
-        seconds = BigDecimal.valueOf(2147483647);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is Weeks=%w, Days=%d %h2:%m2:%s2", 3);
-        System.out.println(sfsResult);
-
-        seconds = BigDecimal.valueOf(2147483647);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %f microseconds", 3);
-        System.out.println(sfsResult);
-
-        seconds = BigDecimal.valueOf(2147483647000.1234567890d);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %f microseconds", 3);
-        System.out.println(sfsResult);
-
-        seconds = BigDecimal.valueOf(0.0000000001234567890d);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o seconds is %f microseconds", 9);
-        System.out.println(sfsResult);
-
-        seconds = BigDecimal.valueOf(4000000000d);
-        sfsResult = StringFormatSecondsHighPrecision.format(seconds, "%o is %f microseconds", 0);
-        System.out.println(sfsResult);
+        // Small numbers
+        System.out.println(sfsHighPrecision.format(new BigDecimal(".000000000123456789"), "%o %f", 12));
 
     }
 }

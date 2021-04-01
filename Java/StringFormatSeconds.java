@@ -1,13 +1,19 @@
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-//import java.util.*;
-//import java.lang.*;
+
 
 class StringFormatSeconds {
 
     public static void main(String[] args) {
+
+        System.out.println(format(550.194812, "%o %s.%f", 6));
+
+        System.out.println(format(550.194812, "%o %s.%f", 3));
+
+        System.out.println(format(.001001, "%o %s2 %l %f", 0));
+
+        System.out.println(format(.001001, "%o %s2", 6));
+
     }
 
     /**
@@ -23,6 +29,7 @@ class StringFormatSeconds {
     *                           %h for hours
     *                           %m for minutes
     *                           %s for seconds
+    *                           %l for milliseconds (0.001 second)
     *                           %f for microseconds (0.000001 second)
     *                           %o for the unchanged seconds value
     * @param    nDecimal        The number of decimals applied to the
@@ -36,7 +43,7 @@ class StringFormatSeconds {
         String unitSizePlainString;
         String unitLeftPadSize;
 
-        //System.out.println(new BigDecimal(seconds).toPlainString());
+        //System.out.println(seconds);
 
         // Input validation
         // https://docs.oracle.com/javase/8/docs/api/java/lang/IllegalArgumentException.html
@@ -48,6 +55,8 @@ class StringFormatSeconds {
             throw new IllegalArgumentException(
                 "Decimal must be greater than or equal to 0");
 
+        // Available time units
+        //
         // Create a LinkedHashMap (Array) for all available time units.
         // Instead of a normal Hashmap create a LinkedHashMap; a
         // LinkedHashMap iterates in the order in which the entries
@@ -61,6 +70,7 @@ class StringFormatSeconds {
         units.put("h", (double)3600); // hour
         units.put("m", (double)60); // minute
         units.put("s", (double)1); // second
+        units.put("l", (double).001); // millisecond
         units.put("f", (double).000001); // microsecond
 
         // Determine the smallest time unit in the formatString and
@@ -85,7 +95,6 @@ class StringFormatSeconds {
                 continue;
 
             // divmod
-            // unit_size, seconds = divmod(seconds, unit['secs'])
             //
             // Process the quotient and the remainder (modulo) of this
             // time units seconds from the available seconds.
@@ -94,29 +103,19 @@ class StringFormatSeconds {
             unitSize = Math.floor(seconds / unit.getValue());
 
             // Assign the remainder to seconds
-            //
-            // Use BigDecimal for remainder calculation, this adds
-            // precision.
-            // Test with seconds=550.194812 returned *.194811
-            // (.1948119) instead of .194812.
-            // 1948.194812 % 60
-            // - Modulo using BigDecimal: 28.194812
-            // - Modulo using Double: 28.194811999999956
-            //
             // seconds = seconds % unit.getValue();
-            seconds = new BigDecimal(BigDecimal.valueOf(seconds).toPlainString())
-            // seconds = new BigDecimal(Double.toString(seconds))
-                .remainder(new BigDecimal(unit.getValue()))
-                .doubleValue();
+            seconds = seconds - (unitSize * unit.getValue());
 
             // Smallest time unit; add the remaing seconds as
             // fractions of this time unit's size.
-            if (unit.getKey() == smallestUnitInFormatString)
+            if (unit.getKey() == smallestUnitInFormatString) {
                 unitSize += 1 / unit.getValue() * seconds;
-                // migrate to BigDecimal?
-                //unitSize += new BigDecimal(BigDecimal.valueOf(seconds).toPlainString())
-                //    .divide(new BigDecimal(unit.getValue()), nDecimal, RoundingMode.FLOOR)
-                //    .doubleValue();
+
+                // Truncate decimals after nDecimal
+                // https://stackoverflow.com/a/25903634
+                unitSize = Math.floor(
+                    unitSize * Math.pow(10, nDecimal)) / Math.pow(10, nDecimal);
+            }
 
 
             // calculations for this unit are complete, proceed with
@@ -131,41 +130,29 @@ class StringFormatSeconds {
                 //
                 // All non smallest timeunits do not have decimals
                 // since their value is Math.floor()-ed.
-                // Use BigDecimal.toPlainString() instead of
-                // String.valueOf() to cast the double
-                // unitSize to the String unitSizePlainString.
-                // BigDecimal.toPlainString() does not add decimals
-                // (.0) nor does it show scientific notation as
-                // String.valueOf() does.
-                unitSizePlainString = new BigDecimal(unitSize).toPlainString();
+                // Use String.format() as it does not show scientific
+                // notation as String.valueOf() does.
+                unitSizePlainString = String.format(
+                    "%.0f", unitSize);
 
             } else {
 
                 // Smallest entry
-                //
-                // Use BigDecimal.setScale(); it will always show
-                // zeroes as much as the scale is set:
-                // >>> System.out.println(new BigDecimal(0).setScale(3, RoundingMode.FLOOR).toPlainString());
-                // 0.000
-                //
-                // >>> test with .999
-                // Shows .998 when using below code:
-                // >>> unitSizePlainString = new BigDecimal(unitSize).setScale(nDecimal, RoundingMode.DOWN).toPlainString();
-                // Solution:
-                // Make sure to cast the double unitSize using
-                // BigDecimal.valueOf().toPlainString()
-                // https://stackoverflow.com/a/63067040
-                unitSizePlainString = new BigDecimal(BigDecimal.valueOf(unitSize).toPlainString())
-                    .setScale(nDecimal, RoundingMode.DOWN)
-                    .toPlainString();
+                // Use String.format() to cast unitSize to String and
+                // set the num decimals to nDecimal.
+                unitSizePlainString = String.format(
+                    "%." + nDecimal + "f", unitSize);
+                // unitSizePlainString = String.valueOf( unitSize);
+
             }
 
             // Zeroes left padding
             //
             // This is configured by a single integer [0-9] directly
-            // following the format specifier (%s2). unitLeftPadSize is
-            // a String for replacing formatString, it is cast to an
-            // integer in String.format() call.
+            // following the format specifier (%s2). The
+            // unitLeftPadSize variable is a String for replacing
+            // formatString, it is cast to an integer in the
+            // String.format() call.
             //
             // Determine if this unit has left padding configured and
             // write them if needed.
@@ -280,11 +267,10 @@ class StringFormatSeconds {
         return s;
     }
 
-    // Taken care of by BigDecimal.setScale()
+    // Taken care of by String.format()
     //private static String rpadZeroes( String s, int nZeroes){
     //    s = String.format("%1$-" + (s.indexOf(".") + 1 + nZeroes) +"s", s).replace(" ", "0");
     //    return s;
     //}
-
 
 }
