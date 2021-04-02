@@ -9,18 +9,19 @@ languages.
 
 # Description
 
-There are two versions variations being CamelCase and snake_case:
+Depending on the programming language the program name is in Camel case 
+or in Snake case:
 
-#### CamelCase 
+**Camel case**
 ```
 StringFormatSeconds[->format]( seconds, formatString [ = '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
 ```
 
-#### Snakecase 
+**Snake case** 
 ```
 strfseconds[->format]( seconds, formatstring [ = '%d2:%m2:%s2'], ndecimal [ = 3 ])
 ```
-*The examples in this README uses the snake_case version.*
+*The examples in this README use the Snake case variant.*
 
 # String Format Seconds
 
@@ -29,7 +30,7 @@ explicit format string. The formatstring contains format specifiers
 controlling which time units should be shown. *(see list of all available 
 format specifiers in the parameter secion)*  
   
-### Time unit accumulation
+## Time unit accumulation
 All time units accumulate until their next greater time unit specified 
 in the formatstring is reached. If a greater time unit is reached then 
 the time unit will reset to 0 and the greater time unit will accumulate.
@@ -37,28 +38,28 @@ the time unit will reset to 0 and the greater time unit will accumulate.
 Example:  
 Hours values range from 0 to 23 if Days are specified in formatstring; 
 when the 24th hour is reached Days will accumulate with 1 and Hours is 
-reset to 0.  
-If Days is not specified in the formatstring, Hours value will 
-accumulate to 24 and beyond.
-Likewise Minutes will accumulate over 59 when Hours is not defined etc 
-etc.
+reset to 0. If Days is *not* specified in the formatstring Hours value will 
+accumulate to 24 and beyond.  
+Likewise Minutes will accumulate over 59 when Hours is not defined, 
+Seconds will accumulate over 59 when Minutes is not specified, etc.
 
-### Rounding
-This function rounds down, decimals after ndecimal parameter are 
+## Rounding
+This function rounds down, decimals after **ndecimal** parameter are 
 truncated. This is designed to enforce that a time unit will only 
 accumulate when "all it's seconds have passed". 
-
 
 # Parameters
 
 ## seconds | seconds
-The seconds to format. Datatype is Double or Float.
+A double or float containing the seconds to format. 
 
 ## formatstring | formatString
-A String containing format specifiers controlling the display of the 
-seconds.
+A string containing format specifiers controlling the display of 
+**seconds**. If **formatstring** is omitted it defaults to 
+**'%d2:%m2:%s2'**.
 
-#### The following format specifiers are recognized in the formatString parameter
+### Formatstring specifiers
+Time units are displayed using the following format specifiers:
 
 Format specifier | Description                          | Example returned values
 :--              | :--                                  | :--
@@ -70,33 +71,37 @@ Format specifier | Description                          | Example returned value
 %l               | milliseconds (0.001 second)          | Example: 3000 for 3 seconds
 %f               | microseconds (0.000001 second)       | Example: 7000000 for 7 seconds
 %o               | the unchanged seconds value
-  
 
-#### Left padding format specifiers with zeroes
-Format specifiers can be left padded with zeroes by adding an
-integer from 1 to 9 directly after the format specifier. The 
-integer specifies the padding length. 
+*Examples: (ndecimal set to 2)*  
+%h:%m:%s displays 3601 seconds as 1:0:1.00  
+%d displays 3601 seconds as 0.04
+  
+### Left padding time units
+Each time unit specified can be left padded with zeroes by adding an 
+integer from 1 to 9 directly after the format specifier. The integer 
+specifies the padding length. 
 
-Example: %s**3** will show 12 seconds as 012  
-Example: %s**5** will show 123 seconds as 00123
-  
-  
+*Examples:*  
+%s3 will show 12 seconds as 012  
+%m5:%s2 will show 62 seconds as 00001:02
+
 ## ndecimal | nDecimal 
-The number of decimals applied to the smallest format specifier unit. 
-Decimals are shown matching the size of nDecimal. Datatype is Integer.
+A positive integer containing the number of decimals applied to the 
+smallest format specifier unit. Decimals are shown matching the size 
+of **ndecimal**. If **ndecimal** is omitted it defaults to **3**.
 
-Example: ndecimal=3 will show 0.5 as 0.500
-
+*Examples:*  
+ndecimal=3 will show 0.5 as 0.500  
+ndecimal=2 will show 0.999 as 0.99  
+ndecimal=0 will show 0.999 as 0 (see Rounding section)  
 
 # Return Values
-Returns a String with all format specifiers replaced for the given 
+Returns a string with all format specifiers replaced for the given 
 seconds. 
-
 
 # Errors
 - Throws an error when seconds is less than 0.  
 - Throws an error when ndecimal is less than 0.
-
 
 # Examples
 
@@ -138,7 +143,8 @@ strfseconds( 1948.194812, "%o seconds is %h2:%m2:%s2 %f", 0);
 ```
 // Show seconds as minutes 
 strfseconds( 90, "%o seconds is %m minutes", 2);
-// Show with three decimals
+
+// Show .999999 fraction with three decimals
 strfseconds( .999999, "%o seconds is %s seconds", 3);
 // Show without decimals - will show 0 seconds, rounding mode is down.
 strfseconds( .999999, "%o seconds is %s seconds", 0);
@@ -166,5 +172,5 @@ strfsecondshp[->format]( seconds, formatstring [ = '%d2:%m2:%s2'], ndecimal [ = 
 
 ---
 
-*This is a Java version of the Python package
+*There is a Beta Python package available in 
 [Python-strfseconds](https://github.com/remivisser/Python-strfseconds)*
