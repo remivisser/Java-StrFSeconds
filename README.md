@@ -14,12 +14,12 @@ or in Snake case:
 
 **Camel case**
 ```
-StringFormatSeconds[->format]( seconds, formatString [ = '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
+StringFormatSeconds[->format]( seconds, formatString [ = '%h2:%m2:%s2'], nDecimal [ = 3 ]) 
 ```
 
 **Snake case** 
 ```
-strfseconds[->format]( seconds, formatstring [ = '%d2:%m2:%s2'], ndecimal [ = 3 ])
+strfseconds[->format]( seconds, formatstring [ = '%h2:%m2:%s2'], ndecimal [ = 3 ])
 ```
 *The examples in this README use the Snake case variant.*
 
@@ -77,7 +77,7 @@ A double or float containing the seconds to format.
 ## formatstring | formatString
 A string containing timeunit specifiers controlling the display of 
 `seconds`. If `formatstring` is omitted it defaults to 
-`%d2:%m2:%s2`.
+`%h2:%m2:%s2`.
 
 ### Timeunit specifiers
 Timeunits are displayed using the following timeunit specifiers:
@@ -102,7 +102,7 @@ strfseconds( 3601, '%d', 2 )
 1:0:1.00
 0.04
 ```  
-### Left padding timeunits
+### Timeunits left padding 
 Timeunits can be left padded with zeroes by adding a number from 1 
 to 9 directly after the timeunit specifier, eg like `%s2`. The integer 
 specifies the padding length. 
@@ -120,9 +120,9 @@ strfseconds( 62, '%m5:%s2', 0 )
 ```
 
 ## ndecimal | nDecimal 
-A positive integer containing the number of decimals applied to the 
-smallest timeunit. Decimals are shown matching the size of `ndecimal`. 
-If `ndecimal` is omitted it defaults to `3`.
+A positive integer containing the number of decimals shown. Decimals 
+are shown matching the size of `ndecimal`. If `ndecimal` is omitted it 
+defaults to `3`. 
 
 *Examples:*  
 ```
@@ -135,13 +135,16 @@ strfseconds( 0.999, '%s', 0 )
 0.99
 0
 ```
+*(Decimals only apply to the smallest timeunit defined in the 
+`formatstring`.)*
+
 # Return Values
 Returns a string with all timeunit specifiers replaced for the given 
 seconds. 
 
 # Errors
-- Throws an error when seconds is less than 0.  
-- Throws an error when ndecimal is less than 0.
+- Throws an error when `seconds` is less than 0.  
+- Throws an error when `ndecimal` is less than 0.
 
 # Examples
 
@@ -178,7 +181,7 @@ strfseconds( 1948.194812, '%o seconds is %h2:%m2:%s2 %f', 0 )
 1948.194812 seconds is 00:32:28 194812
 ```
 
-##  Fractions and Rounding
+##  Fractions and rounding
 ```
 // Show seconds as minutes 
 strfseconds( 90, '%o seconds is %m minutes', 2 )
@@ -201,10 +204,10 @@ microsecond. Every progam language has it's addons for higher precision
 and if they are availble they will be named as follows:
 
 ```
-StringFormatSecondsHighPrecision[->format]( seconds, formatString [ = '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
+StringFormatSecondsHighPrecision[->format]( seconds, formatString [ = '%h2:%m2:%s2'], nDecimal [ = 3 ]) 
 ```
 ```
-strfsecondshp[->format]( seconds, formatstring [ = '%d2:%m2:%s2'], ndecimal [ = 3 ])
+strfsecondshp[->format]( seconds, formatstring [ = '%h2:%m2:%s2'], ndecimal [ = 3 ])
 ```
 ---
 *There is a Beta Python package available in 
