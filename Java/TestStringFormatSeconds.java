@@ -2,11 +2,6 @@ import java.math.BigDecimal;
 
 class TestStringFormatSeconds {
     public static void main(String[] args) {
-        // It is not not needed to initiate a new class of
-        // StringFormatSeconds; as the format() method is defined
-        // static.
-        // StringFormatSeconds StringFormatSeconds = new StringFormatSeconds();
-        //
         // Debug timings
         // to view timings uncomment below and wrap them around
         // function calls
@@ -15,9 +10,8 @@ class TestStringFormatSeconds {
         //System.out.println("[Elapsed in " + (System.currentTimeMillis() - startTime) + "ms]");
 
         double seconds;
-        String sfsResult;
 
-        System.out.println("\n--- Hours, Days, Minutes test---");
+        System.out.println("--- Hours, Days, Minutes test ---");
         // Define seconds 50 hours
         seconds=(60*60*50);
         // Show days and minutes
@@ -61,16 +55,27 @@ class TestStringFormatSeconds {
 
 
         System.out.println("\n--- Lost precision on microseconds tests ---");
-        // This one fails in StringFormatSeconds but succeeds in
-        // StringFormatSecondsHighPrecision (fails in PHP as well)
+        // Millisecond precision failures.
+        // See Tests/TestPrecisionDoubleVsBigDecimal.java
+
         seconds = 550.194812;
         System.out.println(
-            StringFormatSeconds.format(seconds, "%o %s.%f", 6));
-        // 550.194811.999999 (fails)
-        seconds=550.195917;
+            StringFormatSeconds.format(seconds, "StringFormatSeconds: %o %s.%f", 6));
         System.out.println(
-            StringFormatSeconds.format(seconds, "%o %s.%f", 6));
-        // 550.195917 550.195917.000000 (success)
+            StringFormatSecondsHighPrecision.format(seconds, "StringFormatSecondsHighPrecision: %o %s.%f", 6));
+
+        seconds = 550.195917;
+        System.out.println(
+            StringFormatSeconds.format(seconds, "StringFormatSeconds: %o %s.%f", 6));
+        System.out.println(
+            StringFormatSecondsHighPrecision.format(seconds, "StringFormatSecondsHighPrecision: %o %s.%f", 6));
+
+        // 'Loses' one msec in StringFormatSeconds, correct in StringFormatSecondsHighPrecision
+        seconds=.001001d;
+        System.out.println(
+            StringFormatSeconds.format(seconds, "StringFormatSeconds: %o %s", 6));
+        System.out.println(
+            StringFormatSecondsHighPrecision.format(seconds, "StringFormatSecondsHighPrecision: %o %s", 6));
 
     }
 }

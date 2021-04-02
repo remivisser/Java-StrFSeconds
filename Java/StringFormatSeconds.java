@@ -5,15 +5,6 @@ import java.util.Map;
 class StringFormatSeconds {
 
     public static void main(String[] args) {
-
-        System.out.println(format(550.194812, "%o %s.%f", 6));
-
-        System.out.println(format(550.194812, "%o %s.%f", 3));
-
-        System.out.println(format(.001001, "%o %s2 %l %f", 0));
-
-        System.out.println(format(.001001, "%o %s2", 6));
-
     }
 
     /**
@@ -113,8 +104,8 @@ class StringFormatSeconds {
 
                 // Truncate decimals after nDecimal
                 // https://stackoverflow.com/a/25903634
-                unitSize = Math.floor(
-                    unitSize * Math.pow(10, nDecimal)) / Math.pow(10, nDecimal);
+                unitSize = Math.floor(unitSize * Math.pow(10, nDecimal))
+                    / Math.pow(10, nDecimal);
             }
 
 
@@ -130,8 +121,9 @@ class StringFormatSeconds {
                 //
                 // All non smallest timeunits do not have decimals
                 // since their value is Math.floor()-ed.
-                // Use String.format() as it does not show scientific
-                // notation as String.valueOf() does.
+                // Use String.format() to cast unitSize to String
+                // unitSizePlainString. format() does not show
+                // scientific notation as String.valueOf() does.
                 unitSizePlainString = String.format(
                     "%.0f", unitSize);
 
@@ -143,7 +135,6 @@ class StringFormatSeconds {
                 unitSizePlainString = String.format(
                     "%." + nDecimal + "f", unitSize);
                 // unitSizePlainString = String.valueOf( unitSize);
-
             }
 
             // Zeroes left padding
@@ -173,23 +164,18 @@ class StringFormatSeconds {
     }
 
     /**
-    * Method overload for format() with default argument for precision.
-    * @param    seconds         Seconds to be formatted
-    * @param    formatString    The formatString with format specifiers
-    * @return                   String returned from format()
+    * Method overload for format(). Default value for precision 3.
     */
     public static String format(double seconds, String formatString) {
-        return format(seconds, formatString, 3);
+        return format(seconds, formatString, (int)3);
     }
 
     /**
-    * Method overload for format() with default arguments for
-    * formatString and precision.
-    * @param    seconds         Seconds to be formatted
-    * @return                   String returned from format()
+    * Method overload for format(). Default values for formatString
+    * "%h2:%m2:%s" and precision 3.
     */
     public static String format(double seconds) {
-        return format(seconds, "%h2:%m2:%s", 3);
+        return format(seconds, "%h2:%m2:%s", (int)3);
     }
 
     /**

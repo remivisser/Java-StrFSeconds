@@ -3,7 +3,6 @@ import java.util.Map;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-
 //import java.util.*;
 
 
@@ -29,6 +28,7 @@ public class StringFormatSecondsHighPrecision {
     *                           %h for hours
     *                           %m for minutes
     *                           %s for seconds
+    *                           %l for milliseconds (0.001 second)
     *                           %f for microseconds (0.000001 second)
     *                           %o for the unchanged seconds value
     * @param    nDecimal        The number of decimals applied to the
@@ -51,8 +51,8 @@ public class StringFormatSecondsHighPrecision {
         // were put into the map. It is crucial that timeunits will be
         // processed from large (weeks) to small (microseconds).
         LinkedHashMap<String,BigDecimal> units = new LinkedHashMap<>();
-        // !!! Make sure to use `BigDecimal.valueOf(1)` and NOT
-        // `new BigDecimal(1)` !!!
+        // !!! Make sure to use `BigDecimal.valueOf(1)` or
+        // `new BigDecimal()` with double quotes !!!
         // Test with:
         // >>> System.out.println(format(.001001, "%o %s %l %f", 6));
         // https://stackoverflow.com/a/16774279
@@ -148,24 +148,44 @@ public class StringFormatSecondsHighPrecision {
     }
 
     /**
-    * Method overload for format() with default argument for precision.
-    * @param    seconds         Seconds to be formatted
-    * @param    formatString    The formatString with format specifiers
-    * @return                   String returned from format()
+    * Method overload for format(). Default value for precision 3.
     */
     public static String format(BigDecimal seconds, String formatString) {
-        return format(seconds, formatString, 3);
+        return format(seconds, formatString, (int)3);
     }
 
     /**
-    * Method overload for format() with default arguments for
-    * formatString and precision.
-    * @param    seconds         Seconds to be formatted
-    * @return                   String returned from format()
+    * Method overload for format(). Default values for formatString
+    * "%h2:%m2:%s" and precision 3.
     */
     public static String format(BigDecimal seconds) {
-        return format(seconds, "%h2:%m2:%s", 3);
+        return format(seconds, "%h2:%m2:%s", (int)3);
     }
+
+    /**
+    * Method overload for format(). Double seconds is converted to
+    * BigDecimal.
+    */
+    public static String format(double seconds, String formatString, int nDecimal) {
+        return format(BigDecimal.valueOf(seconds), formatString, nDecimal);
+    }
+
+    /**
+    * Method overload for format() (Double version). Default value for
+    * precision 3.
+    */
+    public static String format(double seconds, String formatString) {
+        return format(BigDecimal.valueOf(seconds), formatString, 3);
+    }
+
+    /**
+    * Method overload for format() (Double version). Default values for
+    * formatString "%h2:%m2:%s" and precision 3.
+    */
+    public static String format(double seconds) {
+        return format(BigDecimal.valueOf(seconds), "%h2:%m2:%s", 3);
+    }
+
 
     /**
     * Remove .0$ from string, used for original passed seconds %o
