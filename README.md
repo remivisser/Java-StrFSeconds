@@ -1,6 +1,6 @@
-# StringFormatSeconds - Summary
+# String Format Seconds
 
-StringFormatSeconds is a simple program that converts seconds into 
+String Format Seconds is a simple program that converts seconds into 
 logical time units. Time units are: weeks, days, hours, minutes, 
 seconds, milli-and microseconds. 
 
@@ -9,18 +9,18 @@ languages.
 
 # Description
 
-There are two versions for it's naming; CamelCase and snake_case. The 
-examples in this README uses the snake_case version.
+There are two versions variations being CamelCase and snake_case:
 
-#### CamelCase Languages
+#### CamelCase 
 ```
-StringFormatSeconds[->format]( seconds, formatString [= '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
+StringFormatSeconds[->format]( seconds, formatString [ = '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
 ```
 
-#### Snakecase Languages
+#### Snakecase 
 ```
-strfseconds[->format]( seconds, formatstring [= '%d2:%m2:%s2'], ndecimal [ = 3 ])
+strfseconds[->format]( seconds, formatstring [ = '%d2:%m2:%s2'], ndecimal [ = 3 ])
 ```
+*The examples in this README uses the snake_case version.*
 
 # String Format Seconds
 
@@ -32,7 +32,7 @@ format specifiers in the parameter secion)*
 ### Time unit accumulation
 All time units accumulate until their next greater time unit specified 
 in the formatstring is reached. If a greater time unit is reached then 
-the time unit will reset to 0 and the greater time unit will accumalate.
+the time unit will reset to 0 and the greater time unit will accumulate.
 
 Example:  
 Hours values range from 0 to 23 if Days are specified in formatstring; 
@@ -67,14 +67,15 @@ Format specifier | Description                          | Example returned value
 %h               | hours                                | 0 through 23. If days is not specified value may exceed 23.
 %m               | minutes                              | 0 through 59. If hours is not specified value may exceed 59.
 %s               | seconds                              | 0 through 59. If minutes is not specified value may exceed 59.
+%l               | milliseconds (0.001 second)          | Example: 3000 for 3 seconds
 %f               | microseconds (0.000001 second)       | Example: 7000000 for 7 seconds
 %o               | the unchanged seconds value
   
-  
+
 #### Left padding format specifiers with zeroes
 Format specifiers can be left padded with zeroes by adding an
-integer from 1 to 9 directly after the format specifier specifying 
-the padding length. 
+integer from 1 to 9 directly after the format specifier. The 
+integer specifies the padding length. 
 
 Example: %s**3** will show 12 seconds as 012  
 Example: %s**5** will show 123 seconds as 00123
@@ -119,7 +120,6 @@ strfseconds( 180000, "%o seconds is %d days and %m minutes", 2);
 180000 seconds is 2 days and 120.00 minutes
 ```
 
-
 ## Stopwatch timer 
 ```
 // Show seconds as a stopwatch
@@ -158,10 +158,10 @@ microsecond. Every progam language has it's addons for higher precision
 and if they are availble they will be named as follows:
 
 ```
-StringFormatSecondsHighPrecision[->format]( seconds, formatString [= '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
+StringFormatSecondsHighPrecision[->format]( seconds, formatString [ = '%d2:%m2:%s2'], nDecimal [ = 3 ]) 
 ```
 ```
-strfsecondshp[->format]( seconds, formatstring [= '%d2:%m2:%s2'], ndecimal [ = 3 ])
+strfsecondshp[->format]( seconds, formatstring [ = '%d2:%m2:%s2'], ndecimal [ = 3 ])
 ```
 
 ---

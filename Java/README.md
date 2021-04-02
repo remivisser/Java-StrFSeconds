@@ -8,13 +8,12 @@ of this parent directory.
 
 # Description
 
-There are two classes a default one - StringFormatSeconds - that uses a 
-Double and a 'high precision' version - StringFormatSecondsHighPrecision - 
-that uses a BigDecimal(1).  
-*(1)StringFormatSecondsHighPrecision has a method 
-that allows for passing seconds as a Double. It casts the Double to a BigDecimal.*
+There are two classes;
+- The default class - StringFormatSeconds in StringFormatSeconds.java. This class uses a Double.
+- A 'High Precision' class - StringFormatSecondsHighPrecision in 
+StringFormatSecondsHighPrecision.java. This class uses a BigDecimal. 
 
-## Default version StringFormatSeconds
+## StringFormatSeconds
 ```
 // StringFormatSeconds.java
 public class StringFormatSeconds
@@ -24,7 +23,7 @@ public class StringFormatSeconds
 |_ public static String format(double seconds) // formatString="%h2:%m2:%s", nDecimal=3 
 ```
 
-## High Precision version StringFormatSecondsHighPrecision
+## StringFormatSecondsHighPrecision
 ```
 // StringFormatSecondsHighPrecision.java
 public class StringFormatSecondsHighPrecision
@@ -33,7 +32,7 @@ public class StringFormatSecondsHighPrecision
 |_ public static String format(double seconds, String formatString) // nDecimal=3 
 |_ public static String format(double seconds) // formatString="%h2:%m2:%s", nDecimal=3 
 
-// Double version, allows seconds to be passed as a Double 
+// Overload for Double, allows seconds to be passed as a Double 
 |_ public static String format(double seconds, String formatString, int nDecimal)
 // Default parameters for Double version 
 |_ public static String format(double seconds, String formatString) // nDecimal=3 
@@ -56,7 +55,7 @@ public class TestStringFormatSecondsHighPrecision
 
 ## Test class Tests/TestPrecisionDoubleVsBigDecimal
 Class with math tests demonstrating the decimal precision accurancy of 
-a BigDecimal versus a Double.
+a Double versus a BigDecimal.
 ```
 // ./Tests/TestPrecisionDoubleVsBigDecimal.java
 public class TestPrecisionDoubleVsBigDecimal
