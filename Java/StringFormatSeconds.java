@@ -8,13 +8,15 @@ class StringFormatSeconds {
     }
 
     /**
-    * Converting seconds into logical time units being: weeks, days,
-    * hours, minutes, seconds and microseconds.
+    * Converts seconds into logical timeunits. Timeunits are: weeks,
+    * days, hours, minutes, seconds, milli-and microseconds.
     *
-    * @param    seconds         The seconds to format.
-    * @param    formatString    A String containing format specifiers
-    *                           controlling the display of the seconds.
-    *                           Available format specifiers are:
+    * @param    seconds         A double containing the seconds to
+    *                           format.
+    * @param    formatString    A string containing timeunit specifiers
+    *                           controlling the display of seconds.
+    *                           Timeunits are displayed using the
+    *                           following timeunit specifiers:
     *                           %w for weeks
     *                           %d for days
     *                           %h for hours
@@ -23,9 +25,11 @@ class StringFormatSeconds {
     *                           %l for milliseconds (0.001 second)
     *                           %f for microseconds (0.000001 second)
     *                           %o for the unchanged seconds value
-    * @param    nDecimal        The number of decimals applied to the
-    *                           smallest format specifier time unit.
-    * @return                   A String with all format specifiers
+    * @param    nDecimal        A positive integer containing the
+    *                           number of decimals shown. Decimals are
+    *                           only applicable for the smallest
+    *                           timeunit.
+    * @return                   A String with all timeunit specifiers
     *                           replaced for the given seconds.
     */
     public static String format(double seconds, String formatString, int nDecimal) {
@@ -46,13 +50,13 @@ class StringFormatSeconds {
             throw new IllegalArgumentException(
                 "Decimal must be greater than or equal to 0");
 
-        // Available time units
+        // Available timeunits LinkedHashMap (Array)
         //
-        // Create a LinkedHashMap (Array) for all available time units.
-        // Instead of a normal Hashmap create a LinkedHashMap; a
-        // LinkedHashMap iterates in the order in which the entries
-        // were put into the map. It is crucial that timeunits will be
-        // processed from large (weeks) to small (microseconds).
+        // It is crucial that timeunits will be processed from large
+        // (weeks) to small (microseconds). To achieve this create a
+        // LinkedHashMap instead of a normal HashMap. A LinkedHashMap
+        // iterates in the order in which the entries were put into the
+        // map.
         // https://stackoverflow.com/a/17910409
         // https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/LinkedHashMap.html
         LinkedHashMap<String,Double> units = new LinkedHashMap<>();
@@ -64,8 +68,8 @@ class StringFormatSeconds {
         units.put("l", (double).001); // millisecond
         units.put("f", (double).000001); // microsecond
 
-        // Determine the smallest time unit in the formatString and
-        // set variable accordingly. If no smallest time unit found
+        // Determine the smallest timeunit in the formatString and
+        // set variable accordingly. If no smallest timeunit found
         // return unaltered formatString.
         for (Map.Entry<String,Double> unit : units.entrySet())
             if (formatString.indexOf("%"+unit.getKey()) != -1)
@@ -76,86 +80,104 @@ class StringFormatSeconds {
 
         // Replace '%o' with the original passed value for seconds
         // remove .0$ from valueOf() using removeZeroDecimal()
-        formatString = formatString.replace("%o", removeZeroDecimal(String.valueOf(seconds)));
+        formatString = formatString.replace(
+            "%o", removeZeroDecimal(String.valueOf(seconds)));
 
-        // For every time unit in units...
+        // For every timeunit in units...
         for (Map.Entry<String,Double> unit : units.entrySet()) {
-            // Check if this time unit is defined in the formatString,
-            // if not continue.
+            // Check if this timeunit is defined in the formatString,
+            // if not continue to next timeunit.
             if (formatString.indexOf("%"+unit.getKey()) == -1)
                 continue;
 
             // divmod
             //
             // Process the quotient and the remainder (modulo) of this
-            // time units seconds from the available seconds.
+            // timeunits seconds from the available seconds.
             //
             // Assign the quotient to unitSize
             unitSize = Math.floor(seconds / unit.getValue());
 
             // Assign the remainder to seconds
-            // seconds = seconds % unit.getValue();
-            seconds = seconds - (unitSize * unit.getValue());
+            //seconds = seconds - (unitSize * unit.getValue());
+            seconds = seconds % unit.getValue();
 
-            // Smallest time unit; add the remaing seconds as
-            // fractions of this time unit's size.
+            // Smallest timeunit
             if (unit.getKey() == smallestUnitInFormatString) {
-                unitSize += 1 / unit.getValue() * seconds;
+                // Add the remaining seconds as fractions of this
+                // timeunit's size.
+                if (seconds > 0)
+                    unitSize += 1 / unit.getValue() * seconds;
 
                 // Truncate decimals after nDecimal
+                // For nDecimal=0 use Math.floor()
+                // For nDecimal > 0 use Math.floor(unitSize * Math.pow(10, nDecimal))
+                // divide by Math.pow(10, nDecimal)
                 // https://stackoverflow.com/a/25903634
-                unitSize = Math.floor(unitSize * Math.pow(10, nDecimal))
+                if (nDecimal == 0) {
+                    unitSize = Math.floor(unitSize);
+                } else {
+                    unitSize = Math.floor(unitSize * Math.pow(10, nDecimal))
                     / Math.pow(10, nDecimal);
+                }
             }
 
 
-            // calculations for this unit are complete, proceed with
+            // Calculations for this timeunit are complete, proceed with
             // formatting.
 
 
-            // Smallest and non-smallest entries have different
-            // handling for decimals.
-            if (unit.getKey() != smallestUnitInFormatString) {
-
+            // Cast double unitSize to String unitSizePlainString
+            //
+            // String.format() is use as it does not show scientifc
+            // notation (as String.valueOf() does) also String.format()
+            // allows for fixed zeroes after decimal sign.
+            //
+            // Smallest and non-smallest timeunits have different
+            // setting for decimals.
+            if (unit.getKey() != smallestUnitInFormatString ) {
                 // Non smallest entries
                 //
-                // All non smallest timeunits do not have decimals
-                // since their value is Math.floor()-ed.
-                // Use String.format() to cast unitSize to String
-                // unitSizePlainString. format() does not show
-                // scientific notation as String.valueOf() does.
+                // Non smallest timeunits are displayed without
+                // decimals;
+                // Use String.format() to cast unitSize to String and
+                // set the number of fixed decimals to ".0f".
+                // (String.format() rounds up but because value of
+                // timeunit is floored no rounding up will occur.)
                 unitSizePlainString = String.format(
                     "%.0f", unitSize);
-
             } else {
 
                 // Smallest entry
+                //
+                // Smallest timeunit is displayed with nDecimal
+                // decimals;
                 // Use String.format() to cast unitSize to String and
-                // set the num decimals to nDecimal.
+                // set the number of fixed decimals ".f" to nDecimal.
+                // (String.format() rounds up but because decimals are
+                // truncated at the size of nDecimal no rounding up
+                // will occur.)
                 unitSizePlainString = String.format(
                     "%." + nDecimal + "f", unitSize);
-                // unitSizePlainString = String.valueOf( unitSize);
             }
 
             // Zeroes left padding
             //
             // This is configured by a single integer [0-9] directly
-            // following the format specifier (%s2). The
-            // unitLeftPadSize variable is a String for replacing
+            // following the timeunit specifier (%s2). The
+            // unitLeftPadSize variable is a String for replacing in
             // formatString, it is cast to an integer in the
             // String.format() call.
-            //
-            // Determine if this unit has left padding configured and
-            // write them if needed.
             unitLeftPadSize = leftPadParameterValue(formatString, unit.getKey());
             if (unitLeftPadSize != "")
                 unitSizePlainString = leftPadZeroes(unitSizePlainString, Integer.parseInt(unitLeftPadSize));
 
             // Replacement
             //
-            // Replace current time unit plus left padd parameter by
-            // unitSizePlainString.
-            formatString = formatString.replace("%" + unit.getKey() + unitLeftPadSize, unitSizePlainString);
+            // Replace current timeunit plus left padd parameter (%s2)
+            // by unitSizePlainString.
+            formatString = formatString.replace(
+                "%" + unit.getKey() + unitLeftPadSize, unitSizePlainString);
 
         }
 
@@ -195,7 +217,7 @@ class StringFormatSeconds {
     /**
     * Determine if String s is an integer.
     * (Used in left pad zeroes parameters to test if adjecent character
-    * of a format specifier is an integer.)
+    * of a timeunit specifier is an integer.)
     * https://simplesolution.dev/java-check-string-is-valid-integer/
     *
     * @param  s                 String to be evaluated

@@ -1,9 +1,7 @@
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-//import java.util.*;
 
 
 public class StringFormatSecondsHighPrecision {
@@ -11,18 +9,18 @@ public class StringFormatSecondsHighPrecision {
     }
 
     /**
-    * Converting seconds into logical time units being: weeks, days,
-    * hours, minutes, seconds and microseconds.
+    * Converts seconds into logical timeunits. Timeunits are: weeks,
+    * days, hours, minutes, seconds, milli-and microseconds.
     *
-    * @param    seconds         The seconds to format. Type is
-    *                           BigDecimal, make sure to correctly pass
+    * @param    seconds         A BigDecimal containing the seconds to
+    *                           format. Make sure to correctly pass
     *                           it, see TestStringFormatSecondsHighPrecision.
     *                           For testing use `new BigDecimal("{Double}")`
     *                           - with quotes.
-    * @param    formatString    A String containing format specifiers
-    *                           controlling the display of the seconds.
-    *                           Available format specifiers are:
-    *
+    * @param    formatString    A string containing timeunit specifiers
+    *                           controlling the display of seconds.
+    *                           Timeunits are displayed using the
+    *                           following timeunit specifiers:
     *                           %w for weeks
     *                           %d for days
     *                           %h for hours
@@ -31,9 +29,11 @@ public class StringFormatSecondsHighPrecision {
     *                           %l for milliseconds (0.001 second)
     *                           %f for microseconds (0.000001 second)
     *                           %o for the unchanged seconds value
-    * @param    nDecimal        The number of decimals applied to the
-    *                           smallest format specifier time unit.
-    * @return                   A String with all format specifiers
+    * @param    nDecimal        A positive integer containing the
+    *                           number of decimals shown. Decimals are
+    *                           only applicable for the smallest
+    *                           timeunit.
+    * @return                   A String with all timeunit specifiers
     *                           replaced for the given seconds.
     */
     public static String format(BigDecimal seconds, String formatString, int nDecimal) {
@@ -43,13 +43,25 @@ public class StringFormatSecondsHighPrecision {
         String unitSizePlainString;
         String unitLeftPadSize;
 
-        // Available time units
+        // Input validation
+        // https://docs.oracle.com/javase/8/docs/api/java/lang/IllegalArgumentException.html
+        if (seconds.compareTo(BigDecimal.ZERO) == -1)
+            throw new IllegalArgumentException(
+                "Seconds must be greater than or equal to 0");
+
+        if (nDecimal < 0)
+            throw new IllegalArgumentException(
+                "Decimal must be greater than or equal to 0");
+
+        // Available timeunits LinkedHashMap (Array)
         //
-        // Create a LinkedHashMap (Array) for all available time units.
-        // Instead of a normal Hashmap create a LinkedHashMap; a
-        // LinkedHashMap iterates in the order in which the entries
-        // were put into the map. It is crucial that timeunits will be
-        // processed from large (weeks) to small (microseconds).
+        // It is crucial that timeunits will be processed from large
+        // (weeks) to small (microseconds). To achieve this create a
+        // LinkedHashMap instead of a normal HashMap. A LinkedHashMap
+        // iterates in the order in which the entries were put into the
+        // map.
+        // https://stackoverflow.com/a/17910409
+        // https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/LinkedHashMap.html
         LinkedHashMap<String,BigDecimal> units = new LinkedHashMap<>();
         // !!! Make sure to use `BigDecimal.valueOf(1)` or
         // `new BigDecimal()` with double quotes !!!
@@ -76,15 +88,13 @@ public class StringFormatSecondsHighPrecision {
 
         // Replace '%o' with the original passed value for seconds
         // remove .0$ from valueOf() using removeZeroDecimal()
-        // formatString = formatString.replace("%o", removeZeroDecimal(String.valueOf(seconds)));
-        // formatString = formatString.replace("%o", removeZeroDecimal(seconds.toPlainString()));
         formatString = formatString.replace(
             "%o", removeZeroDecimal(seconds.toPlainString()));
 
-        // For every time unit in units...
+        // For every timeunit in units...
         for (Map.Entry<String,BigDecimal> unit : units.entrySet()) {
             // Check if this time unit is defined in the formatString,
-            // if not continue.
+            // if not continue to next timeunit.
             if (formatString.indexOf("%"+unit.getKey()) == -1)
                 continue;
 
@@ -99,23 +109,21 @@ public class StringFormatSecondsHighPrecision {
             // set to 0 and RoundingMode to Floor.
             unitSize = unitSize.add(seconds.divide(unit.getValue(), 0, RoundingMode.FLOOR));
             // Assign the remainder to seconds
-            //seconds = seconds.remainder(unit.getValue());
-
-            //System.out.println("---");
-            //System.out.println(seconds.toPlainString());
-            //System.out.println(unit.getValue());
-
             seconds = seconds.remainder(unit.getValue());
 
-            // Smallest time unit; add the remaing seconds as fractions
-            // of this time unit's size.
-
+            // Smallest timeunit
             if (unit.getKey() == smallestUnitInFormatString)
+                // Add the remaining seconds as fractions of this
+                // timeunit's size.
+                //
                 // unitSize += 1 / unit.getValue() * seconds;
+                // Setting int scale to nDecimal does all the work;
+                // - will add '0' for '.999' if nDecimal = 0
+                // - will add '0.9' for '.999' if nDecimal = 1
                 unitSize = unitSize.add(seconds.divide(unit.getValue(), nDecimal, RoundingMode.FLOOR));
 
 
-            // calculations for this unit are complete, proceed with
+            // Calculations for this timeunit are complete, proceed with
             // formatting.
 
 
@@ -125,20 +133,18 @@ public class StringFormatSecondsHighPrecision {
             // Zeroes left padding
             //
             // This is configured by a single integer [0-9] directly
-            // following the format specifier (%s2). unitLeftPadSize is
-            // a String for replacing formatString, it is cast to an
-            // integer in String.format() call.
-            //
-            // Determine if this unit has left padding configured and
-            // write them if needed.
+            // following the timeunit specifier (%s2). The
+            // unitLeftPadSize variable is a String for replacing in
+            // formatString, it is cast to an integer in the
+            // String.format() call.
             unitLeftPadSize = leftPadParameterValue(formatString, unit.getKey());
             if (unitLeftPadSize != "")
                 unitSizePlainString = leftPadZeroes(unitSizePlainString, Integer.parseInt(unitLeftPadSize));
 
             // Replacement
             //
-            // Replace current time unit plus left padd parameter by
-            // unitSizePlainString.
+            // Replace current timeunit plus left padd parameter (%s2)
+            // by unitSizePlainString.
             formatString = formatString.replace("%" + unit.getKey() + unitLeftPadSize, unitSizePlainString);
 
         }
@@ -204,7 +210,7 @@ public class StringFormatSecondsHighPrecision {
     /**
     * Determine if String s is an integer.
     * (Used in left pad zeroes parameters to test if adjecent character
-    * of a format specifier is an integer.)
+    * of a timeunit specifier is an integer.)
     * https://simplesolution.dev/java-check-string-is-valid-integer/
     *
     * @param  s                 String to be evaluated
