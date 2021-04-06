@@ -36,10 +36,10 @@ in the `formatstring` is reached. If a greater timeunit is reached then
 the timeunit will reset to 0 and the greater timeunit will accumulate.
 
 *Example:*  
-Hours value ranges from 0 to 23 if Days are specified in `formatstring`; 
-when the 24th hour is reached Days will accumulate with 1 and Hours is 
-reset to 0. If Days is *not* specified in the `formatstring` Hours 
-value will accumulate to 24 and beyond.  
+If both Hours and Days are specified in `formatstring` Hours value will 
+range from 0 to 23. When the 24th hour is reached Days will accumulate 
+with 1 and Hours is reset to 0. If Hours is specified and Days is *not* 
+specified then Hours value will accumulate to 24 and beyond.  
 Likewise Minutes will accumulate over 59 when Hours is not specified, 
 Seconds will accumulate over 59 when Minutes is not specified, etc.
 
@@ -121,8 +121,9 @@ strfseconds( 62, '%m5:%s2', 0 )
 
 ## ndecimal | nDecimal 
 A positive integer containing the number of decimals shown. Decimals 
-are shown matching the size of `ndecimal`. If `ndecimal` is omitted it 
-defaults to `3`. 
+are only applicable for the smallest timeunit. Decimals are shown 
+matching the size of `ndecimal`. 
+If `ndecimal` is omitted it defaults to `3`. 
 
 *Examples:*  
 ```
